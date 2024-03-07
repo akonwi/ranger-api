@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Frequency {
+  WEEKLY
+  MONTHLY
+  ANNUALLY
+  CUSTOM
+}
+
+model ChoreIdea {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  frequency Frequency
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+}
+
+model Chore {
+  id               String       @id @default(cuid())
+  name             String
+  frequency        Frequency
+  customFrequency  Int?
+  day              Int?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @default(now()) @updatedAt
+  house            House        @relation(fields: [houseId], references: [id])
+  houseId          String
+  creatorId        String
+  description      String?      @default("")
+  Assignment       Assignment[]
+  designatedUserId String?
+  isArchived       Boolean      @default(false)
+
+  @@index([id, houseId])
+  @@index([houseId])
+}
+
+model Assignment {
+  id        String   @id @default(cuid())
+  userId    String
+  houseId   String
+  house     House    @relation(fields: [houseId], references: [id])
+  chore     Chore    @relation(fields: [choreId], references: [id])
+  choreId   String
+  week      Int
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  isPenalty Boolean  @default(false)
+
+  @@unique([houseId, choreId, week])
+  @@index([houseId, week])
+  @@index([userId, week])
+  @@index(userId)
+}
+
+model House {
+  id          String       @id @default(cuid())
+  name        String
+  creatorId   String
+  adminId     String
+  memberIds   String[]
+  chores      Chore[]
+  assignments Assignment[]
+  invites     Invite[]
+  week        Int          @default(0)
+}
+
+model Invite {
+  email   String @id
+  house   House  @relation(fields: [houseId], references: [id])
+  houseId String
+}

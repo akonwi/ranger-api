@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "House" ADD COLUMN     "week" INTEGER NOT NULL DEFAULT 0;

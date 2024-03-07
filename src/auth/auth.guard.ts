@@ -6,21 +6,48 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Reflector } from "@nestjs/core";
+import { GqlExecutionContext } from "@nestjs/graphql";
 import { Request } from "express";
 import * as jose from "jose";
+import { HouseRepository } from "src/houses/house.repository";
+import { IS_PUBLIC_KEY } from "./public.decorator";
+import { CurrentUser } from "./user.decorator";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly _logger = new Logger(AuthGuard.name);
 
-  constructor(private readonly _configService: ConfigService) {}
+  constructor(
+    private _configService: ConfigService,
+    private _reflector: Reflector,
+    private _houseRepository: HouseRepository,
+  ) {}
 
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
+    const isPublic = this._reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
+    const ctx = GqlExecutionContext.create(context);
+
+    const gqlContext = ctx.getContext();
+    const request = gqlContext.req;
     const token = await this._getTokenFromHeader(request);
 
     if (!token) throw new UnauthorizedException();
 
+    const userId = await this._validateToken(token);
+    const house = await this._houseRepository.getForUser(userId);
+
+    request.user = {
+      id: userId,
+      houseId: house?.id,
+    } satisfies CurrentUser;
     return true;
   }
 
@@ -29,7 +56,8 @@ export class AuthGuard implements CanActivate {
     return type === "Bearer" ? token : undefined;
   }
 
-  private async validateToken(token: string): Promise<string> {
+  // returns the user id
+  private async _validateToken(token: string): Promise<string> {
     const jwks = this._configService.getOrThrow("JWKS");
 
     const result = await jose.jwtVerify(
