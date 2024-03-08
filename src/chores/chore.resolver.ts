@@ -4,19 +4,21 @@ import {
   InputType,
   Int,
   Mutation,
+  Parent,
   Query,
+  ResolveField,
   Resolver,
-  registerEnumType,
 } from "@nestjs/graphql";
 import { Frequency } from "@prisma/client";
-import { Chore } from "./chore.model";
+import { Cadence, Chore } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentUser, User } from "src/auth/user.decorator";
 
-registerEnumType(Frequency, { name: "Frequency" });
-
 @InputType()
 export class CreateChoreInput {
+  @Field()
+  id: string;
+
   @Field()
   name: string;
 
@@ -36,13 +38,48 @@ export class CreateChoreInput {
   designatedUserId?: string;
 }
 
+@InputType()
+export class CadenceInput {
+  @Field((type) => Frequency)
+  frequency: Frequency;
+
+  @Field((type) => Int, { nullable: true })
+  days?: number;
+}
+
+@InputType()
+export class EditChoreInput {
+  @Field()
+  id: string;
+
+  @Field({ nullable: true })
+  name?: string;
+
+  @Field({ nullable: true })
+  description?: string;
+
+  @Field({nullable: true})
+  designatedUserId?: string;
+
+  @Field(type => CadenceInput, { nullable: true })
+  cadence?: CadenceInput;
+}
+
 @Resolver((of) => Chore)
 export class ChoreResolver {
   constructor(private readonly _choreRepository: ChoreRepository) { }
 
   @Query((returns) => [Chore])
   async chores(@User() user: CurrentUser) {
-    return [];
+    return this._choreRepository.list({ houseId: user.houseId });
+  }
+
+  @ResolveField('cadence', returns => Cadence)
+  async cadence(@Parent() chore: Chore) {
+    return {
+      frequency: chore.frequency,
+      days: chore.customFrequency
+    }
   }
 
   @Mutation((returns) => Chore)
@@ -58,6 +95,18 @@ export class ChoreResolver {
           id: user.houseId
         }
       }
+    });
+  }
+
+  @Mutation((returns) => Chore)
+  async editChore(@User() user: CurrentUser, @Args('input') input: EditChoreInput): Promise<Chore> {
+    return this._choreRepository.update({
+      id: input.id,
+      name: input.name,
+      description: input.description,
+      designatedUserId: input.designatedUserId,
+      frequency: input.cadence?.frequency,
+      customFrequency: input.cadence?.days
     });
   }
 }
