@@ -5,12 +5,15 @@ import { Maybe } from "src/utils";
 import { HouseRepository } from "./house.repository";
 import { User } from "src/users/user.model";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import { Chore } from "src/chores/chore.model";
+import { ChoreRepository } from "src/chores/chore.repository";
 
 @Resolver(() => House)
 export class HouseResolver {
   constructor(
     private readonly _houseRepository: HouseRepository,
     private readonly _userService: UserService,
+    private readonly _choreRepository: ChoreRepository,
   ) {}
 
   @ResolveField("members", () => [User])
@@ -21,5 +24,10 @@ export class HouseResolver {
   @Query(() => House, { name: "myHouse", nullable: true })
   async getMyHouse(@CurrentUser() user: UserContext): Promise<Maybe<House>> {
     return this._houseRepository.getForUser(user.id);
+  }
+
+  @ResolveField("chores", () => [Chore])
+  async getChores(@Parent() house: House): Promise<Chore[]> {
+    return this._choreRepository.list({ houseId: house.id });
   }
 }
