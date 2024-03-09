@@ -9,11 +9,12 @@ import { AuthGuard } from "./auth/auth.guard";
 import { ChoreRepository } from "./chores/chore.repository";
 import { ChoreResolver } from "./chores/chore.resolver";
 import { HouseRepository } from "./houses/house.repository";
+import { FunctionService } from "./inngest/function.service";
 import { PrismaService } from "./prisma.service";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env"] }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
@@ -28,6 +29,7 @@ import { PrismaService } from "./prisma.service";
     HouseRepository,
     ChoreResolver,
     ChoreRepository,
+    FunctionService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

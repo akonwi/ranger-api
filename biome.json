@@ -11,10 +11,20 @@
   },
   "formatter": {
     "enabled": true,
+    "formatWithErrors": true,
     "indentWidth": 2,
     "indentStyle": "space"
   },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "arrowParentheses": "asNeeded"
+    }
+  },
   "json": {
+    "formatter": {
+      "enabled": true
+    },
     "parser": {
       "allowComments": true
     }

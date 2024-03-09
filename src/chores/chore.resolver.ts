@@ -13,6 +13,7 @@ import { Frequency } from "@prisma/client";
 import { Cadence, Chore } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentUser, User } from "src/auth/user.decorator";
+import { inngest } from "src/inngest/inngest.provider";
 
 @InputType()
 export class CreateChoreInput {
@@ -22,7 +23,7 @@ export class CreateChoreInput {
   @Field()
   name: string;
 
-  @Field((type) => Frequency)
+  @Field(type => Frequency)
   frequency: Frequency;
 
   @Field(() => Int, { nullable: true })
@@ -40,10 +41,10 @@ export class CreateChoreInput {
 
 @InputType()
 export class CadenceInput {
-  @Field((type) => Frequency)
+  @Field(type => Frequency)
   frequency: Frequency;
 
-  @Field((type) => Int, { nullable: true })
+  @Field(type => Int, { nullable: true })
   days?: number;
 }
 
@@ -58,23 +59,23 @@ export class EditChoreInput {
   @Field({ nullable: true })
   description?: string;
 
-  @Field({nullable: true})
+  @Field({ nullable: true })
   designatedUserId?: string;
 
-  @Field(type => CadenceInput, { nullable: true })
+  @Field(() => CadenceInput, { nullable: true })
   cadence?: CadenceInput;
 }
 
-@Resolver((of) => Chore)
+@Resolver(() => Chore)
 export class ChoreResolver {
-  constructor(private readonly _choreRepository: ChoreRepository) { }
+  constructor(private readonly _choreRepository: ChoreRepository) {}
 
-  @Query((returns) => [Chore])
+  @Query(() => [Chore])
   async chores(@User() user: CurrentUser) {
     return this._choreRepository.list({ houseId: user.houseId });
   }
 
-  @ResolveField('cadence', returns => Cadence)
+  @ResolveField('cadence', () => Cadence)
   async cadence(@Parent() chore: Chore) {
     return {
       frequency: chore.frequency,
@@ -82,9 +83,12 @@ export class ChoreResolver {
     }
   }
 
-  @Mutation((returns) => Chore)
-  async createChore(@User() user: CurrentUser,@Args('input') input: CreateChoreInput): Promise<Chore> {
-    return this._choreRepository.create({
+  @Mutation(() => Chore)
+  async createChore(
+    @User() user: CurrentUser,
+    @Args('input') input: CreateChoreInput,
+  ): Promise<Chore> {
+    const chore = await this._choreRepository.create({
       name: input.name,
       description: input.description,
       frequency: input.frequency,
@@ -92,21 +96,33 @@ export class ChoreResolver {
       creatorId: user.id,
       house: {
         connect: {
-          id: user.houseId
-        }
-      }
+          id: user.houseId,
+        },
+      },
     });
+
+    await inngest.send({
+      name: "chore.created",
+      data: {
+        houseId: user.houseId,
+        id: chore.id,
+      },
+    });
+
+    return chore;
   }
 
-  @Mutation((returns) => Chore)
-  async editChore(@User() user: CurrentUser, @Args('input') input: EditChoreInput): Promise<Chore> {
+  @Mutation(() => Chore)
+  async editChore(
+    @Args('input') input: EditChoreInput,
+  ): Promise<Chore> {
     return this._choreRepository.update({
       id: input.id,
       name: input.name,
       description: input.description,
       designatedUserId: input.designatedUserId,
       frequency: input.cadence?.frequency,
-      customFrequency: input.cadence?.days
+      customFrequency: input.cadence?.days,
     });
   }
 }
