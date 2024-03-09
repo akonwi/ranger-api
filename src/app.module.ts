@@ -11,6 +11,8 @@ import { ChoreResolver } from "./chores/chore.resolver";
 import { HouseRepository } from "./houses/house.repository";
 import { FunctionService } from "./inngest/function.service";
 import { PrismaService } from "./prisma.service";
+import { HouseResolver } from "./houses/house.resolver";
+import { UserService } from "./users/user.service";
 
 @Module({
   imports: [
@@ -26,10 +28,12 @@ import { PrismaService } from "./prisma.service";
   providers: [
     PrismaService,
     AppService,
+    HouseResolver,
     HouseRepository,
     ChoreResolver,
     ChoreRepository,
     FunctionService,
+    UserService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

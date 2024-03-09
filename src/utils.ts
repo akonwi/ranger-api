@@ -1,6 +1,10 @@
 export type Nil = undefined | null;
 
-export type Maybe<T> = T | Nil;
+export function isNil<T>(thing: T | Nil): thing is Nil {
+  return !isPresent(thing);
+}
+
+export type Maybe<T> = T | null;
 
 export type Result<Data, Error = Nil> = Error extends Nil
   ? [Data]

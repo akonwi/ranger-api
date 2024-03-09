@@ -16,6 +16,9 @@
     "indentStyle": "space"
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "enabled": true,
       "arrowParentheses": "asNeeded"

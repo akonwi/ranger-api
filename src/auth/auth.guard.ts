@@ -12,7 +12,7 @@ import { Request } from "express";
 import * as jose from "jose";
 import { HouseRepository } from "src/houses/house.repository";
 import { IS_PUBLIC_KEY } from "./public.decorator";
-import { CurrentUser } from "./user.decorator";
+import { UserContext } from "./currentUser.decorator";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -47,7 +47,7 @@ export class AuthGuard implements CanActivate {
     request.user = {
       id: userId,
       houseId: house?.id,
-    } satisfies CurrentUser;
+    } satisfies UserContext;
     return true;
   }
 

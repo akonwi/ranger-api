@@ -12,7 +12,7 @@ import {
 import { Frequency } from "@prisma/client";
 import { Cadence, Chore } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
-import { CurrentUser, User } from "src/auth/user.decorator";
+import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
 import { inngest } from "src/inngest/inngest.provider";
 
 @InputType()
@@ -71,7 +71,7 @@ export class ChoreResolver {
   constructor(private readonly _choreRepository: ChoreRepository) {}
 
   @Query(() => [Chore])
-  async chores(@User() user: CurrentUser) {
+  async chores(@CurrentUser() user: UserContext) {
     return this._choreRepository.list({ houseId: user.houseId });
   }
 
@@ -85,7 +85,7 @@ export class ChoreResolver {
 
   @Mutation(() => Chore)
   async createChore(
-    @User() user: CurrentUser,
+    @CurrentUser() user: UserContext,
     @Args('input') input: CreateChoreInput,
   ): Promise<Chore> {
     const chore = await this._choreRepository.create({

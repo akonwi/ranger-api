@@ -2057,6 +2057,14 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
+auth0@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/auth0/-/auth0-4.3.1.tgz#7f91e3a4b9af6c5d9004b25025deb014fb0ed067"
+  integrity sha512-VuR/PdNHwXD9QiYUZf8UN0qiv07yJWHKfF2yEhePaPCrpwbEm6lHM6dkN7ylOdseogCkGmvchxYGMga0IPNrCA==
+  dependencies:
+    jose "^4.13.2"
+    uuid "^9.0.0"
+
 babel-jest@^29.7.0:
   version "29.7.0"
   resolved "https://registry.yarnpkg.com/babel-jest/-/babel-jest-29.7.0.tgz#f4369919225b684c56085998ac63dbd05be020d5"
@@ -3983,6 +3991,11 @@ jest@^29.5.0:
     "@jest/types" "^29.6.3"
     import-local "^3.0.2"
     jest-cli "^29.7.0"
+
+jose@^4.13.2:
+  version "4.15.5"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.5.tgz#6475d0f467ecd3c630a1b5dadd2735a7288df706"
+  integrity sha512-jc7BFxgKPKi94uOvEmzlSWFFe2+vASyXaKUpdQKatWAESU2MWjDfFf0fdfc83CDKcA5QecabZeNLyfhe3yKNkg==
 
 jose@^5.2.2:
   version "5.2.2"
