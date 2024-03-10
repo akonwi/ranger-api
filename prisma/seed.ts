@@ -13,6 +13,7 @@ async function main() {
         "google-oauth2|110029945167450156347",
         "google-oauth2|108193015358805265423",
       ],
+      week: 0,
       chores: {
         createMany: {
           data: [
@@ -66,7 +67,7 @@ main()
   .then(async () => {
     await prisma.$disconnect();
   })
-  .catch(async (e) => {
+  .catch(async e => {
     console.error(e);
     await prisma.$disconnect();
     process.exit(1);

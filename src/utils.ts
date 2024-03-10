@@ -10,6 +10,6 @@ export type Result<Data, Error = Nil> = Error extends Nil
   ? [Data]
   : [Data, Nil] | [Nil, Error];
 
-export function isPresent<T>(thing: T | Nil): thing is T {
+export function isPresent<T>(thing: Maybe<T>): thing is T {
   return thing != null;
 }

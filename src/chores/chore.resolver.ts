@@ -18,9 +18,6 @@ import { inngest } from "src/inngest/inngest.provider";
 @InputType()
 export class CreateChoreInput {
   @Field()
-  id: string;
-
-  @Field()
   name: string;
 
   @Field(type => Frequency)
@@ -75,18 +72,18 @@ export class ChoreResolver {
     return this._choreRepository.list({ houseId: user.houseId });
   }
 
-  @ResolveField('cadence', () => Cadence)
+  @ResolveField("cadence", () => Cadence)
   async cadence(@Parent() chore: Chore) {
     return {
       frequency: chore.frequency,
-      days: chore.customFrequency
-    }
+      days: chore.customFrequency,
+    };
   }
 
   @Mutation(() => Chore)
   async createChore(
     @CurrentUser() user: UserContext,
-    @Args('input') input: CreateChoreInput,
+    @Args("input") input: CreateChoreInput,
   ): Promise<Chore> {
     const chore = await this._choreRepository.create({
       name: input.name,
@@ -113,9 +110,7 @@ export class ChoreResolver {
   }
 
   @Mutation(() => Chore)
-  async editChore(
-    @Args('input') input: EditChoreInput,
-  ): Promise<Chore> {
+  async editChore(@Args("input") input: EditChoreInput): Promise<Chore> {
     return this._choreRepository.update({
       id: input.id,
       name: input.name,

@@ -13,6 +13,8 @@ import { FunctionService } from "./inngest/function.service";
 import { PrismaService } from "./prisma.service";
 import { HouseResolver } from "./houses/house.resolver";
 import { UserService } from "./users/user.service";
+import { AssignmentService } from "./assignments/assignment.service";
+import { AssignmentRepository } from "./assignments/assignment.repository";
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { UserService } from "./users/user.service";
     ChoreRepository,
     FunctionService,
     UserService,
+    AssignmentRepository,
+    AssignmentService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
