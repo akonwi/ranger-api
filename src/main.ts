@@ -5,6 +5,7 @@ import { inngest } from "./inngest/inngest.provider";
 import { FunctionService } from "./inngest/function.service";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { ConfigService } from "@nestjs/config";
+import { Logger } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -20,7 +21,9 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
-
-  await app.listen(configService.get("PORT", 3000));
+  const port = configService.get("PORT", 3000);
+  await app.listen(port).then(() => {
+    new Logger("main").log(`Listening on port ${port}`);
+  });
 }
 bootstrap();
