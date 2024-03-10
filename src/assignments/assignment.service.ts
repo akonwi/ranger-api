@@ -15,6 +15,13 @@ export class AssignmentService {
     private readonly _houseRepository: HouseRepository,
   ) {}
 
+  async getPerMember(house: House): Promise<Record<string, Assignment[]>> {
+    return this._assignmentRepository.getPerMember({
+      houseId: house.id,
+      week: house.week,
+    });
+  }
+
   async assignChore(choreId: string): Promise<Assignment> {
     const chore = await this._choreRepository.get(choreId);
     if (chore == null) throw new Error("Chore not found");

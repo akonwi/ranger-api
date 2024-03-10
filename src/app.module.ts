@@ -15,6 +15,8 @@ import { HouseResolver } from "./houses/house.resolver";
 import { UserService } from "./users/user.service";
 import { AssignmentService } from "./assignments/assignment.service";
 import { AssignmentRepository } from "./assignments/assignment.repository";
+import { AssignmentResolver } from "./assignments/assignment.resolver";
+import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolver";
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { AssignmentRepository } from "./assignments/assignment.repository";
     UserService,
     AssignmentRepository,
     AssignmentService,
+    AssignmentResolver,
+    MemberAssignmentResolver,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
