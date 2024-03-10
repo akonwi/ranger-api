@@ -9,7 +9,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "build": "nest build",
+    "build": "yarn db:migrate && yarn db:generate && nest build",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:generate": "prisma generate",
