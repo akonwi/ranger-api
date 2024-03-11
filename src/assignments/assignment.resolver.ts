@@ -1,10 +1,4 @@
-import {
-  Field,
-  ObjectType,
-  Parent,
-  ResolveField,
-  Resolver,
-} from "@nestjs/graphql";
+import { Parent, ResolveField, Resolver } from "@nestjs/graphql";
 import { Assignment } from "./assignment.model";
 import { Chore } from "src/chores/chore.model";
 import { ChoreRepository } from "src/chores/chore.repository";

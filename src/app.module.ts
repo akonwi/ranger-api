@@ -17,6 +17,7 @@ import { AssignmentService } from "./assignments/assignment.service";
 import { AssignmentRepository } from "./assignments/assignment.repository";
 import { AssignmentResolver } from "./assignments/assignment.resolver";
 import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolver";
+import { UserResolver } from "./users/user.resolver";
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolve
     ChoreRepository,
     FunctionService,
     UserService,
+    UserResolver,
     AssignmentRepository,
     AssignmentService,
     AssignmentResolver,

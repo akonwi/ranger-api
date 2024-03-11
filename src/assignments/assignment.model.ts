@@ -13,4 +13,10 @@ export class Assignment {
 
   @Field(() => Int)
   week: number;
+
+  @Field()
+  completed: boolean;
+
+  @Field()
+  isPenalty: boolean;
 }

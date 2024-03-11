@@ -5,16 +5,16 @@ registerEnumType(Frequency, { name: "Frequency" });
 
 @ObjectType()
 export class Cadence {
-  @Field((type) => Frequency)
+  @Field(type => Frequency)
   frequency: Frequency;
 
-  @Field((type) => Int, { nullable: true })
+  @Field(type => Int, { nullable: true })
   days?: number;
 }
 
 @ObjectType()
 export class Chore {
-  @Field((type) => ID)
+  @Field(type => ID)
   id: string;
 
   @Field()
@@ -29,4 +29,6 @@ export class Chore {
   frequency: Frequency;
 
   customFrequency: number | null;
+
+  day: number | null;
 }
