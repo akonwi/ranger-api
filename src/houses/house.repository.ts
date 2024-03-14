@@ -29,4 +29,15 @@ export class HouseRepository {
 
     return house.invites.map(invite => invite.email);
   }
+
+  async createInvite(houseId: string, email: string): Promise<string> {
+    const invite = await this._prisma.invite.create({
+      data: {
+        email,
+        houseId,
+      },
+    });
+
+    return invite.email;
+  }
 }

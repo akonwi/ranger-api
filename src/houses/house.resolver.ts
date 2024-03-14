@@ -1,4 +1,11 @@
-import { Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from "@nestjs/graphql";
 import { House } from "./house.model";
 import { UserService } from "src/users/user.service";
 import { Maybe } from "src/utils";
@@ -27,6 +34,14 @@ export class HouseResolver {
   @ResolveField("invites", () => [String])
   async getInvites(@Parent() house: House): Promise<string[]> {
     return this._houseRepository.getInvites(house.id);
+  }
+
+  @Mutation(() => String)
+  async createInvite(
+    @CurrentUser() user: UserContext,
+    @Args({ name: "email", type: () => String }) email: string,
+  ): Promise<string> {
+    return this._houseRepository.createInvite(user.houseId, email);
   }
 
   @Query(() => House, { name: "myHouse", nullable: true })
