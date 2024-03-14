@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { House } from "./house.model";
 import { PrismaService } from "src/prisma.service";
-import { Maybe } from "src/utils";
+import { Maybe, isNil } from "src/utils";
 
 @Injectable()
 export class HouseRepository {
@@ -17,5 +17,16 @@ export class HouseRepository {
     return this._prisma.house.findUnique({
       where: { id },
     });
+  }
+
+  async getInvites(houseId: string): Promise<string[]> {
+    const house = await this._prisma.house.findUnique({
+      where: { id: houseId },
+      select: { invites: true },
+    });
+
+    if (isNil(house)) return [];
+
+    return house.invites.map(invite => invite.email);
   }
 }

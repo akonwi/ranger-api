@@ -24,6 +24,11 @@ export class HouseResolver {
     return this._userService.findMany(house.memberIds);
   }
 
+  @ResolveField("invites", () => [String])
+  async getInvites(@Parent() house: House): Promise<string[]> {
+    return this._houseRepository.getInvites(house.id);
+  }
+
   @Query(() => House, { name: "myHouse", nullable: true })
   async getMyHouse(@CurrentUser() user: UserContext): Promise<Maybe<House>> {
     return this._houseRepository.getForUser(user.id);
