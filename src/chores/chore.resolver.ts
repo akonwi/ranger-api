@@ -99,7 +99,23 @@ export class ChoreResolver {
     return {
       frequency: chore.frequency,
       days: chore.customFrequency,
+      label: this._getCadenceLabel(chore),
     };
+  }
+
+  private _getCadenceLabel(chore: Chore) {
+    switch (chore.frequency) {
+      case Frequency.WEEKLY:
+        return "Weekly";
+      case Frequency.MONTHLY:
+        return "Monthly";
+      case Frequency.ANNUALLY:
+        return "Annually";
+      case Frequency.CUSTOM:
+        return `Every ${chore.customFrequency} days`;
+      default:
+        return "";
+    }
   }
 
   @Mutation(() => Chore)

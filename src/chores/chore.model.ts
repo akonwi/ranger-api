@@ -10,6 +10,9 @@ export class Cadence {
 
   @Field(type => Int, { nullable: true })
   days?: number;
+
+  @Field()
+  label: string;
 }
 
 @ObjectType()
