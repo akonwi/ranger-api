@@ -6,6 +6,7 @@ import { HouseRepository } from "src/houses/house.repository";
 import { AssignmentRepository } from "./assignment.repository";
 import { Maybe, isNil, isPresent } from "src/utils";
 import { House } from "src/houses/house.model";
+import { inngest } from "src/inngest/inngest.provider";
 
 @Injectable()
 export class AssignmentService {
@@ -20,6 +21,31 @@ export class AssignmentService {
       houseId: house.id,
       week: house.week,
     });
+  }
+
+  async setStatus(id: string, completed: boolean): Promise<Assignment> {
+    return this._assignmentRepository.update(id, { completed });
+  }
+
+  async reassign(input: {
+    fromUserId: string;
+    toUserId: string;
+    ids: string[];
+  }): Promise<Assignment[]> {
+    const assignments = await Promise.all(
+      input.ids.map(async id =>
+        this._assignmentRepository.update(id, { userId: input.toUserId }),
+      ),
+    );
+    inngest.send({
+      name: "assignments.reassigned",
+      data: {
+        toUserId: input.toUserId,
+        fromUserId: input.fromUserId,
+        assignmentIds: input.ids,
+      },
+    });
+    return assignments;
   }
 
   async assignChore(choreId: string): Promise<Assignment> {
