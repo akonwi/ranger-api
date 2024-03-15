@@ -20,27 +20,6 @@ import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 
 @InputType()
-export class CreateChoreInput {
-  @Field()
-  name: string;
-
-  @Field(type => Frequency)
-  frequency: Frequency;
-
-  @Field(() => Int, { nullable: true })
-  day?: number;
-
-  @Field(() => Int, { nullable: true })
-  customFrequency?: number;
-
-  @Field()
-  description: string;
-
-  @Field({ nullable: true })
-  designatedUserId?: string;
-}
-
-@InputType()
 export class CadenceInput {
   @Field(type => Frequency)
   frequency: Frequency;
@@ -50,7 +29,7 @@ export class CadenceInput {
 }
 
 @InputType()
-export class EditChoreInput {
+export class CreateChoreInput {
   @Field({ nullable: true })
   name?: string;
 
@@ -66,6 +45,9 @@ export class EditChoreInput {
   @Field(() => Int, { nullable: true })
   dayOfWeek?: number;
 }
+
+@InputType()
+export class EditChoreInput extends CreateChoreInput {}
 
 @Resolver(() => Chore)
 export class ChoreResolver {
@@ -146,11 +128,17 @@ export class ChoreResolver {
     @CurrentUser() user: UserContext,
     @Args("input") input: CreateChoreInput,
   ): Promise<Chore> {
+    if (input.cadence.frequency === Frequency.CUSTOM) {
+      if (isNil(input.cadence.days)) {
+        throw new Error("A custom frequency must have a 'days' value");
+      }
+    }
+
     const chore = await this._choreRepository.create({
       name: input.name,
       description: input.description,
-      frequency: input.frequency,
-      customFrequency: input.customFrequency,
+      frequency: input.cadence?.frequency,
+      customFrequency: input.cadence?.days,
       creatorId: user.id,
       house: {
         connect: {
