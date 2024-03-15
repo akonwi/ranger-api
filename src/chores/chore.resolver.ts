@@ -1,6 +1,7 @@
 import {
   Args,
   Field,
+  ID,
   InputType,
   Int,
   Mutation,
@@ -10,10 +11,13 @@ import {
   Resolver,
 } from "@nestjs/graphql";
 import { Frequency } from "@prisma/client";
-import { Cadence, Chore } from "./chore.model";
+import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
 import { inngest } from "src/inngest/inngest.provider";
+import { Maybe, isNil } from "src/utils";
+import { User } from "src/users/user.model";
+import { UserService } from "src/users/user.service";
 
 @InputType()
 export class CreateChoreInput {
@@ -65,30 +69,49 @@ export class EditChoreInput {
 
 @Resolver(() => Chore)
 export class ChoreResolver {
-  constructor(private readonly _choreRepository: ChoreRepository) {}
+  constructor(
+    private readonly _choreRepository: ChoreRepository,
+    private readonly _userService: UserService,
+  ) {}
 
   @Query(() => [Chore])
   async chores(@CurrentUser() user: UserContext) {
     return this._choreRepository.list({ houseId: user.houseId });
   }
 
-  @ResolveField("day", () => String, { nullable: true })
-  async day(@Parent() chore: Chore) {
+  @Query(() => Chore, { name: "chore", nullable: true })
+  async getChore(
+    @Args({ name: "id", type: () => ID }) id: string,
+  ): Promise<Maybe<Chore>> {
+    return this._choreRepository.get(id);
+  }
+
+  @ResolveField("designatedMember", () => User, { nullable: true })
+  async getDesignatedUser(@Parent() chore: Chore): Promise<Maybe<User>> {
+    if (isNil(chore.designatedUserId)) return null;
+
+    return this._userService.get(chore.designatedUserId);
+  }
+
+  @ResolveField("day", () => DayValue, { nullable: true })
+  day(@Parent() chore: Chore): Maybe<DayValue> {
+    if (isNil(chore.day)) return null;
+
     switch (chore.day) {
       case 0:
-        return "Sunday";
+        return { label: "Sunday", value: 0 };
       case 1:
-        return "Monday";
+        return { label: "Monday", value: 1 };
       case 2:
-        return "Tuesday";
+        return { label: "Tuesday", value: 2 };
       case 3:
-        return "Wednesday";
+        return { label: "Wednesday", value: 3 };
       case 4:
-        return "Thursday";
+        return { label: "Thursday", value: 4 };
       case 5:
-        return "Friday";
+        return { label: "Friday", value: 5 };
       case 6:
-        return "Saturday";
+        return { label: "Saturday", value: 6 };
       default:
         return null;
     }

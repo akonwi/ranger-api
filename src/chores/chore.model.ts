@@ -15,6 +15,15 @@ export class Cadence {
   label: string;
 }
 
+@ObjectType("Day")
+export class DayValue {
+  @Field(type => Int)
+  value: number;
+
+  @Field()
+  label: string;
+}
+
 @ObjectType()
 export class Chore {
   @Field(type => ID)
@@ -34,4 +43,6 @@ export class Chore {
   customFrequency: number | null;
 
   day: number | null;
+
+  designatedUserId: string | null;
 }
