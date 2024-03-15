@@ -20,13 +20,7 @@ export class ChoreRepository {
   ): Promise<Chore> {
     return this._prisma.chore.update({
       where: { id: input.id },
-      data: {
-        name: input.name,
-        description: input.description,
-        designatedUserId: input.designatedUserId,
-        frequency: input.frequency,
-        customFrequency: input.customFrequency,
-      },
+      data: input,
     });
   }
 

@@ -51,9 +51,6 @@ export class CadenceInput {
 
 @InputType()
 export class EditChoreInput {
-  @Field()
-  id: string;
-
   @Field({ nullable: true })
   name?: string;
 
@@ -65,6 +62,9 @@ export class EditChoreInput {
 
   @Field(() => CadenceInput, { nullable: true })
   cadence?: CadenceInput;
+
+  @Field(() => Int, { nullable: true })
+  dayOfWeek?: number;
 }
 
 @Resolver(() => Chore)
@@ -171,11 +171,21 @@ export class ChoreResolver {
   }
 
   @Mutation(() => Chore)
-  async editChore(@Args("input") input: EditChoreInput): Promise<Chore> {
+  async editChore(
+    @Args({ name: "id", type: () => ID }) id: string,
+    @Args("input") input: EditChoreInput,
+  ): Promise<Chore> {
+    if (input.cadence.frequency === Frequency.CUSTOM) {
+      if (isNil(input.cadence.days)) {
+        throw new Error("A custom frequency must have a 'days' value");
+      }
+    }
+
     return this._choreRepository.update({
-      id: input.id,
+      id: id,
       name: input.name,
       description: input.description,
+      day: input.dayOfWeek,
       designatedUserId: input.designatedUserId,
       frequency: input.cadence?.frequency,
       customFrequency: input.cadence?.days,
