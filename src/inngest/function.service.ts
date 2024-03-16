@@ -127,10 +127,11 @@ export class FunctionService {
             houseIds.map(houseId => ({
               name: "notifications.house.chores-due",
               data: { houseId },
-            })
+            })),
           );
         },
       ),
+      // TODO: weekly assignments
     ];
   }
 }
