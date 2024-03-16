@@ -2,10 +2,18 @@ import { Injectable } from "@nestjs/common";
 import { House } from "./house.model";
 import { PrismaService } from "src/prisma.service";
 import { Maybe, isNil } from "src/utils";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class HouseRepository {
   constructor(private _prisma: PrismaService) {}
+
+  async list(
+    where: Prisma.HouseWhereInput,
+    select?: Prisma.HouseSelect,
+  ): Promise<House[]> {
+    return this._prisma.house.findMany({ where, select });
+  }
 
   async create(input: { name: string; creatorId: string }): Promise<House> {
     return this._prisma.house.create({

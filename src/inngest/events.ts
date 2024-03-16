@@ -58,6 +58,11 @@ type AssignmentsReassigned = {
 export type RangerEvents = {
   "chore.created": ChoreCreated;
   "assignments.reassigned": AssignmentsReassigned;
+  "notifications.house.chores-due": {
+    data: {
+      houseId: string;
+    };
+  };
   // [RangerEvent.ASSIGN_HOUSE_CHORES_FOR_THE_WEEK]: AssignHouseChoresForWeek;
   // [RangerEvent.USER_JOINED_HOUSE]: UserNeedsAssignments;
   // [RangerEvent.SEND_PENDING_TASKS_NOTIFICATION]: SendPendingTasksNotification;

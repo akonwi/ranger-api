@@ -92,6 +92,14 @@ export class AssignmentService {
     });
   }
 
+  async findDueToday(houseId: string): Promise<Assignment[]> {
+    return this._assignmentRepository.list({
+      houseId,
+      completed: false,
+      chore: { day: new Date().getDay() },
+    });
+  }
+
   private _getNextAssignee(options: {
     choreId: string;
     skip?: string;

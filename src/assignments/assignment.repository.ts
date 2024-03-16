@@ -8,6 +8,13 @@ import { groupBy } from "lodash";
 export class AssignmentRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
+  async list(
+    where: Prisma.AssignmentWhereInput,
+    select?: Prisma.AssignmentSelect,
+  ): Promise<Assignment[]> {
+    return this._prisma.assignment.findMany({ where, select });
+  }
+
   async getMany(ids: string[]): Promise<Assignment[]> {
     return this._prisma.assignment.findMany({ where: { id: { in: ids } } });
   }
