@@ -3,6 +3,7 @@ import * as firebase from "firebase-admin";
 import { UserService } from "./users/user.service";
 import { isNil } from "./utils";
 import { Injectable, Logger } from "@nestjs/common";
+import { Notification } from "firebase-admin/lib/messaging/messaging-api";
 
 @Injectable()
 export class FirebaseService {
@@ -37,5 +38,19 @@ export class FirebaseService {
     await this._userService.updateAppMetadata(input.userId, {
       deviceTokens: Array.from(deviceTokens),
     });
+  }
+
+  async sendNotification(input: {
+    deviceTokens: string[];
+    notification: Notification;
+  }) {
+    const result = await firebase.messaging().sendEachForMulticast({
+      tokens: input.deviceTokens,
+      notification: input.notification,
+    });
+    // TODO: delete bad tokens based on result.failureCount
+    // result.responses.forEach((response, index) => {
+    //   response.error;
+    // });
   }
 }

@@ -24,7 +24,10 @@ export class ChoreRepository {
     });
   }
 
-  async list(input: { houseId: string }): Promise<Chore[]> {
-    return this._prisma.chore.findMany({ where: input });
+  async list(
+    where: Prisma.ChoreWhereInput,
+    select?: Prisma.ChoreSelect,
+  ): Promise<Chore[]> {
+    return this._prisma.chore.findMany({ where, select });
   }
 }

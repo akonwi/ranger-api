@@ -1,4 +1,9 @@
 import { Field, ID, ObjectType } from "@nestjs/graphql";
+import { GetUsers200ResponseOneOfInnerAppMetadata } from "auth0";
+
+export type AppMetadata = GetUsers200ResponseOneOfInnerAppMetadata & {
+  deviceTokens: string[];
+};
 
 @ObjectType()
 export class User {
@@ -14,5 +19,5 @@ export class User {
   @Field()
   email: string;
 
-  appMetadata: Record<string, any>;
+  appMetadata: AppMetadata;
 }

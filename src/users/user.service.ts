@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "./user.model";
+import { AppMetadata, User } from "./user.model";
 import {
   GetUsers200ResponseOneOfInner,
   GetUsers200ResponseOneOfInnerAppMetadata,
@@ -7,10 +7,6 @@ import {
 } from "auth0";
 import { ConfigService } from "@nestjs/config";
 import { Maybe } from "src/utils";
-
-type AppMetadata = GetUsers200ResponseOneOfInnerAppMetadata & {
-  deviceTokens: string[];
-};
 
 @Injectable()
 export class UserService {
