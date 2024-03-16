@@ -26,6 +26,17 @@ export class HouseResolver {
     private readonly _assignmentService: AssignmentService,
   ) {}
 
+  @Mutation(() => House)
+  async createHouse(
+    @CurrentUser() ctx: UserContext,
+    @Args("name") name: string,
+  ): Promise<House> {
+    return this._houseRepository.create({
+      name,
+      creatorId: ctx.id,
+    });
+  }
+
   @ResolveField("members", () => [User])
   async getMembers(@Parent() house: House): Promise<User[]> {
     return this._userService.findMany(house.memberIds);

@@ -7,6 +7,17 @@ import { Maybe, isNil } from "src/utils";
 export class HouseRepository {
   constructor(private _prisma: PrismaService) {}
 
+  async create(input: { name: string; creatorId: string }): Promise<House> {
+    return this._prisma.house.create({
+      data: {
+        name: input.name,
+        creatorId: input.creatorId,
+        adminId: input.creatorId,
+        memberIds: [input.creatorId],
+      },
+    });
+  }
+
   async getForUser(userId: string): Promise<Maybe<House>> {
     return this._prisma.house.findFirst({
       where: { memberIds: { has: userId } },
