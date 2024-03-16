@@ -17,6 +17,7 @@ import { AssignmentResolver } from "./assignments/assignment.resolver";
 import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolver";
 import { UserResolver } from "./users/user.resolver";
 import { ViewerResolver } from "./viewer/viewer.resolver";
+import { FirebaseService } from "./firebase.service";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ViewerResolver } from "./viewer/viewer.resolver";
     AssignmentService,
     AssignmentResolver,
     MemberAssignmentResolver,
+    FirebaseService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

@@ -1,8 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { User } from "./user.model";
-import { GetUsers200ResponseOneOfInner, ManagementClient } from "auth0";
+import {
+  GetUsers200ResponseOneOfInner,
+  GetUsers200ResponseOneOfInnerAppMetadata,
+  ManagementClient,
+} from "auth0";
 import { ConfigService } from "@nestjs/config";
 import { Maybe } from "src/utils";
+
+type AppMetadata = GetUsers200ResponseOneOfInnerAppMetadata & {
+  deviceTokens: string[];
+};
 
 @Injectable()
 export class UserService {
@@ -39,12 +47,34 @@ export class UserService {
     return [];
   }
 
+  async updateAppMetadata(
+    id: string,
+    input: Partial<Pick<AppMetadata, "deviceTokens">>,
+  ) {
+    await this._auth0.users.update(
+      { id },
+      {
+        app_metadata: input,
+      },
+    );
+  }
+
   private _mapUser(u: GetUsers200ResponseOneOfInner): User {
     return {
       id: u.user_id,
       name: u.name,
       email: u.email,
       nickname: u.nickname,
+      appMetadata: this._mapAppMetadata(u.app_metadata),
+    };
+  }
+
+  private _mapAppMetadata(
+    metadata: GetUsers200ResponseOneOfInnerAppMetadata,
+  ): AppMetadata {
+    return {
+      ...metadata,
+      deviceTokens: metadata.deviceTokens ?? [],
     };
   }
 }

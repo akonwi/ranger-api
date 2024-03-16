@@ -13,4 +13,6 @@ export class User {
 
   @Field()
   email: string;
+
+  appMetadata: Record<string, any>;
 }
