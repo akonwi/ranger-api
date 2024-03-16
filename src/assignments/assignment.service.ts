@@ -4,7 +4,7 @@ import { Assignment } from "./assignment.model";
 import { ChoreRepository } from "src/chores/chore.repository";
 import { HouseRepository } from "src/houses/house.repository";
 import { AssignmentRepository } from "./assignment.repository";
-import { Maybe, isNil, isPresent } from "src/utils";
+import { Maybe, isEmpty, isNil, isPresent, toRecord } from "src/utils";
 import { House } from "src/houses/house.model";
 import { inngest } from "src/inngest/inngest.provider";
 
@@ -17,10 +17,16 @@ export class AssignmentService {
   ) {}
 
   async getPerMember(house: House): Promise<Record<string, Assignment[]>> {
-    return this._assignmentRepository.getPerMember({
+    const memberAssignments = await this._assignmentRepository.getPerMember({
       houseId: house.id,
       week: house.week,
     });
+
+    if (!isEmpty(Object.keys(memberAssignments))) {
+      return memberAssignments;
+    }
+
+    return toRecord(house.memberIds);
   }
 
   async setStatus(id: string, completed: boolean): Promise<Assignment> {
