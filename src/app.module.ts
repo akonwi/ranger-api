@@ -16,6 +16,7 @@ import { AssignmentRepository } from "./assignments/assignment.repository";
 import { AssignmentResolver } from "./assignments/assignment.resolver";
 import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolver";
 import { UserResolver } from "./users/user.resolver";
+import { ViewerResolver } from "./viewer/viewer.resolver";
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { UserResolver } from "./users/user.resolver";
   controllers: [],
   providers: [
     PrismaService,
-    AppService,
+    ViewerResolver,
     HouseResolver,
     HouseRepository,
     ChoreResolver,
