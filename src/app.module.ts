@@ -18,6 +18,7 @@ import { MemberAssignmentResolver } from "./assignments/memberAssignment.resolve
 import { UserResolver } from "./users/user.resolver";
 import { ViewerResolver } from "./viewer/viewer.resolver";
 import { FirebaseService } from "./firebase.service";
+import { ChoreService } from "./chores/chore.service";
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { FirebaseService } from "./firebase.service";
     HouseResolver,
     HouseRepository,
     ChoreResolver,
+    ChoreService,
     ChoreRepository,
     FunctionService,
     UserService,

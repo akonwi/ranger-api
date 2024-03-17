@@ -26,6 +26,16 @@ export class HouseRepository {
     });
   }
 
+  async update(
+    id: string,
+    input: { week: number | undefined },
+  ): Promise<House> {
+    return this._prisma.house.update({
+      where: { id },
+      data: { week: input.week },
+    });
+  }
+
   async getForUser(userId: string): Promise<Maybe<House>> {
     return this._prisma.house.findFirst({
       where: { memberIds: { has: userId } },

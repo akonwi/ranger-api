@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma.service";
 import { Assignment } from "./assignment.model";
 import { groupBy } from "lodash";
+import { Maybe } from "src/utils";
 
 @Injectable()
 export class AssignmentRepository {
@@ -21,6 +22,23 @@ export class AssignmentRepository {
 
   async create(input: Prisma.AssignmentCreateInput): Promise<Assignment> {
     return this._prisma.assignment.create({ data: input });
+  }
+
+  async createMany(inputs: Prisma.AssignmentCreateManyInput[]) {
+    await this._prisma.assignment.createMany({ data: inputs });
+  }
+
+  async findLatestForChore(input: {
+    choreId: string;
+    houseId: string;
+  }): Promise<Maybe<Assignment>> {
+    return this._prisma.assignment.findFirst({
+      where: {
+        choreId: input.choreId,
+        houseId: input.houseId,
+      },
+      orderBy: { week: "desc" },
+    });
   }
 
   async update(

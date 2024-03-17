@@ -63,6 +63,10 @@ export type RangerEvents = {
       houseId: string;
     };
   };
+  "command.house.assign-for-week": {
+    data: { houseId: string };
+  };
+
   // [RangerEvent.ASSIGN_HOUSE_CHORES_FOR_THE_WEEK]: AssignHouseChoresForWeek;
   // [RangerEvent.USER_JOINED_HOUSE]: UserNeedsAssignments;
   // [RangerEvent.SEND_PENDING_TASKS_NOTIFICATION]: SendPendingTasksNotification;

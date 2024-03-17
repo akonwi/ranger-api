@@ -6,6 +6,18 @@ export function isNil<T>(thing: T | Nil): thing is Nil {
 
 export type Maybe<T> = T | null;
 
+export function guard<T>(
+  thing: Maybe<T>,
+  message?: string,
+): asserts thing is T {
+  if (isNil(thing)) throw new Error(message ?? "Something required was nil");
+}
+
+export function insist<T>(thing: Maybe<T>, message?: string): T {
+  guard(thing, message);
+  return thing;
+}
+
 export type Result<Data, Error = Nil> = Error extends Nil
   ? [Data]
   : [Data, Nil] | [Nil, Error];
@@ -18,11 +30,9 @@ export function isEmpty<T>(list: T[] | string): boolean {
   return list.length === 0;
 }
 
-export function toRecord<Key extends string | number | symbol, Collection>(
+export function toRecord<Key extends string | number | symbol, T>(
   list: Key[],
-): Record<Key, Collection[]> {
-  return list.reduce(
-    (acc, key) => ({ ...acc, [key]: [] }),
-    {} as Record<Key, Collection[]>,
-  );
+  initializer: (key: Key) => T,
+) {
+  return Object.fromEntries(list.map(i => [i, initializer(i)]));
 }

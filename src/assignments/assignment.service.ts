@@ -26,7 +26,7 @@ export class AssignmentService {
       return memberAssignments;
     }
 
-    return toRecord(house.memberIds);
+    return toRecord(house.memberIds, _ => []);
   }
 
   async setStatus(id: string, completed: boolean): Promise<Assignment> {
@@ -75,7 +75,7 @@ export class AssignmentService {
 
     const userToCounts = await this._getAssignmentCounts(house);
 
-    const nextAssignee = this._getNextAssignee({
+    const nextAssignee = this.getNextAssignee({
       choreId,
       idsToCount: userToCounts,
     });
@@ -92,6 +92,20 @@ export class AssignmentService {
     });
   }
 
+  async createMany(inputs: Parameters<AssignmentRepository["createMany"]>[0]) {
+    return this._assignmentRepository.createMany(inputs);
+  }
+
+  async find(
+    where: Parameters<AssignmentRepository["list"]>[0] & { houseId: string },
+  ): Promise<Assignment[]> {
+    return this._assignmentRepository.list(where);
+  }
+
+  async findLatestForChore(input: { choreId: string; houseId: string }) {
+    return this._assignmentRepository.findLatestForChore(input);
+  }
+
   async findDueToday(houseId: string): Promise<Assignment[]> {
     return this._assignmentRepository.list({
       houseId,
@@ -100,7 +114,7 @@ export class AssignmentService {
     });
   }
 
-  private _getNextAssignee(options: {
+  getNextAssignee(options: {
     choreId: string;
     skip?: string;
     idsToCount: Record<string, number>;

@@ -5,7 +5,10 @@ import { UserService } from "src/users/user.service";
 import { FirebaseService } from "src/firebase.service";
 import { ChoreRepository } from "src/chores/chore.repository";
 import { HouseRepository } from "src/houses/house.repository";
-import { groupBy } from "lodash";
+import { groupBy, shuffle } from "lodash";
+import { ChoreService } from "src/chores/chore.service";
+import { isNil, isPresent, toRecord } from "src/utils";
+import { NonRetriableError } from "inngest";
 
 @Injectable()
 export class FunctionService {
@@ -14,6 +17,7 @@ export class FunctionService {
   constructor(
     private readonly _assignmentService: AssignmentService,
     private readonly _choreRepository: ChoreRepository,
+    private readonly _choreService: ChoreService,
     private readonly _userService: UserService,
     private readonly _firebaseService: FirebaseService,
     private readonly _houseRepository: HouseRepository,
@@ -49,7 +53,9 @@ export class FunctionService {
                 Assignment: { some: { id: { in: assignmentIds } } },
               },
               {
-                name: true,
+                select: {
+                  name: true,
+                },
               },
             );
             return chores.map(c => c.name);
@@ -96,7 +102,7 @@ export class FunctionService {
                     {
                       id: { in: assignments.map(a => a.choreId) },
                     },
-                    { name: true },
+                    { select: { name: true } },
                   );
                   return this._firebaseService.sendNotification({
                     deviceTokens: user.appMetadata.deviceTokens,
@@ -131,7 +137,133 @@ export class FunctionService {
           );
         },
       ),
-      // TODO: weekly assignments
+      inngest.createFunction(
+        {
+          id: "assign-chores-in-house",
+          name: "Weekly: Assign chores in house",
+        },
+        { event: "command.house.assign-for-week" },
+        async ({ event, step }) => {
+          const { houseId } = event.data;
+
+          const house = await step.run("Get house", () =>
+            this._houseRepository.get(houseId),
+          );
+          if (isNil(house)) throw new NonRetriableError("House not found");
+
+          const lastWeek = house.week;
+          const week = lastWeek + 1;
+
+          const previousAssignments = await step.run(
+            "Find previous assignments",
+            async () =>
+              this._assignmentService.find({
+                houseId,
+                week: lastWeek,
+              }),
+          );
+
+          await step.run("Assign penalties", async () => {
+            const incompleteAssignments = previousAssignments.filter(
+              a => !a.completed,
+            );
+            await this._assignmentService.createMany(
+              incompleteAssignments.map(a => ({
+                userId: a.userId,
+                choreId: a.choreId,
+                isPenalty: true,
+                houseId,
+                week,
+              })),
+            );
+          });
+
+          const chores = await step.run("Find chores for this week", () =>
+            this._choreService.findUnassignedChores({ houseId, week }),
+          );
+          await step.run("Assign designated chores", async () => {
+            const designatedChores = chores.filter(c =>
+              isPresent(c.designatedUserId),
+            );
+            return await this._assignmentService.createMany(
+              designatedChores.map(c => ({
+                houseId,
+                week,
+                choreId: c.id,
+                userId: c.designatedUserId,
+                isPenalty: false,
+              })),
+            );
+          });
+
+          const remainingChores = await step.run("Find remaining chores", () =>
+            this._choreService.findUnassignedChores({ houseId, week }),
+          );
+
+          await step.run("Assign remaining chores", async () => {
+            for (const chore of remainingChores) {
+              const currentAssignments = await this._assignmentService.find({
+                houseId,
+                week,
+                isPenalty: false,
+                chore: { designatedUserId: null },
+              });
+              const lastAssignment =
+                await this._assignmentService.findLatestForChore({
+                  choreId: chore.id,
+                  houseId,
+                });
+              const idsToCount = toRecord(
+                house.memberIds,
+                id => currentAssignments.filter(a => a.userId === id).length,
+              );
+
+              let assignee = this._assignmentService.getNextAssignee({
+                choreId: chore.id,
+                skip: lastAssignment?.userId,
+                idsToCount,
+              });
+              if (isNil(assignee)) assignee = shuffle(house.memberIds)[0];
+
+              await this._assignmentService.createMany([
+                {
+                  houseId,
+                  week,
+                  choreId: chore.id,
+                  userId: assignee,
+                  isPenalty: false,
+                },
+              ]);
+            }
+          });
+
+          await step.run("Update week for house", () =>
+            this._houseRepository.update(houseId, {
+              week,
+            }),
+          );
+        },
+      ),
+      inngest.createFunction(
+        { id: "weekly-assign-chores", name: "Weekly: Assign Chores" },
+        // every sunday at 8pm
+        { cron: "TZ=America/New_York 00 20 * * 0" },
+        async ({ step }) => {
+          const houseIds = await step.run("Get all houses", () => {
+            return this._houseRepository.list({}, { id: true });
+          });
+
+          const events = houseIds.map(house => ({
+            name: "command.house.assign-for-week",
+            data: {
+              houseId: house.id,
+            },
+          }));
+
+          // @ts-ignore the schema for RangerEvent is not flexible
+          await step.sendEvent("Send events for each house", events);
+        },
+      ),
     ];
   }
 }
