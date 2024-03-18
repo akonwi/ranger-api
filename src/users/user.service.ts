@@ -37,7 +37,7 @@ export class UserService {
     });
 
     if (response.status === 200) {
-      return response.data.map(this._mapUser);
+      return response.data.map(u => this._mapUser(u));
     }
 
     return [];
