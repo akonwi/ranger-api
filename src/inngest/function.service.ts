@@ -129,10 +129,9 @@ export class FunctionService {
           );
           await step.sendEvent(
             "send-per-house-events",
-            // @ts-expect-error type matching sucks
-            houseIds.map(houseId => ({
+            houseIds.map(({ id }) => ({
               name: "notifications.house.chores-due",
-              data: { houseId },
+              data: { houseId: id },
             })),
           );
         },
