@@ -3,16 +3,18 @@ import {
   ID,
   Mutation,
   Parent,
+  Query,
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
-import { Assignment } from "./assignment.model";
+import { Assignment, PaginatedAssignmentHistory } from "./assignment.model";
 import { Chore } from "src/chores/chore.model";
 import { ChoreRepository } from "src/chores/chore.repository";
 import { UserService } from "src/users/user.service";
 import { User } from "src/users/user.model";
 import { AssignmentService } from "./assignment.service";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import { isNil, last } from "src/utils";
 
 @Resolver(() => Assignment)
 export class AssignmentResolver {
@@ -51,5 +53,27 @@ export class AssignmentResolver {
       toUserId: userId,
       ids: [id],
     });
+  }
+
+  @Query(() => PaginatedAssignmentHistory, { name: "history" })
+  async getHistory(
+    @CurrentUser() ctx: UserContext,
+    @Args({ name: "id", type: () => ID }) choreId: string,
+    @Args({ name: "after", nullable: true }) after?: string,
+  ): Promise<PaginatedAssignmentHistory> {
+    const assignments = await this._assignmentService.getHistory({
+      choreId,
+      houseId: ctx.houseId,
+      cursor: after,
+    });
+
+    const _last = last(assignments);
+    const endCursor = _last?.id;
+    const hasNextPage = isNil(_last) ? false : _last.week > 0;
+
+    return {
+      pageInfo: { hasNextPage, endCursor },
+      edges: assignments,
+    };
   }
 }

@@ -10,10 +10,9 @@ export class AssignmentRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
   async list(
-    where: Prisma.AssignmentWhereInput,
-    select?: Prisma.AssignmentSelect,
+    options: Parameters<Prisma.AssignmentDelegate["findMany"]>[0],
   ): Promise<Assignment[]> {
-    return this._prisma.assignment.findMany({ where, select });
+    return this._prisma.assignment.findMany(options);
   }
 
   async getMany(ids: string[]): Promise<Assignment[]> {

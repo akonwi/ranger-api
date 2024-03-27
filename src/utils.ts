@@ -36,3 +36,7 @@ export function toRecord<Key extends string | number | symbol, T>(
 ) {
   return Object.fromEntries(list.map(i => [i, initializer(i)]));
 }
+
+export function last<T>(list: T[]): Maybe<T> {
+  return list[list.length - 1];
+}

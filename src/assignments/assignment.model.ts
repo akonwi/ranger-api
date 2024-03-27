@@ -20,3 +20,21 @@ export class Assignment {
   @Field()
   isPenalty: boolean;
 }
+
+@ObjectType()
+export class PageInfo {
+  @Field()
+  hasNextPage: boolean;
+
+  @Field({ nullable: true })
+  endCursor?: string;
+}
+
+@ObjectType()
+export class PaginatedAssignmentHistory {
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
+
+  @Field(() => [Assignment])
+  edges: Assignment[];
+}

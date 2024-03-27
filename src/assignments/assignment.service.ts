@@ -97,9 +97,11 @@ export class AssignmentService {
   }
 
   async find(
-    where: Parameters<AssignmentRepository["list"]>[0] & { houseId: string },
+    where: Parameters<AssignmentRepository["list"]>[0]["where"] & {
+      houseId: string;
+    },
   ): Promise<Assignment[]> {
-    return this._assignmentRepository.list(where);
+    return this._assignmentRepository.list({ where });
   }
 
   async findLatestForChore(input: { choreId: string; houseId: string }) {
@@ -108,9 +110,11 @@ export class AssignmentService {
 
   async findDueToday(houseId: string): Promise<Assignment[]> {
     return this._assignmentRepository.list({
-      houseId,
-      completed: false,
-      chore: { day: new Date().getDay() },
+      where: {
+        houseId,
+        completed: false,
+        chore: { day: new Date().getDay() },
+      },
     });
   }
 
@@ -128,6 +132,22 @@ export class AssignmentService {
     );
 
     return orderBy(entries, ([_, value]) => value, "desc")[0][0];
+  }
+
+  async getHistory(input: {
+    choreId: string;
+    houseId: string;
+    cursor?: string;
+  }): Promise<Assignment[]> {
+    return this._assignmentRepository.list({
+      where: {
+        choreId: input.choreId,
+        houseId: input.houseId,
+      },
+      orderBy: { week: "desc" },
+      cursor: isPresent(input.cursor) ? { id: input.cursor } : undefined,
+      take: 10,
+    });
   }
 
   private async _getAssignmentCounts(
