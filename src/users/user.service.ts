@@ -33,6 +33,7 @@ export class UserService {
     if (response.status === 200) {
       const user = this._mapUser(response.data);
       this._cacheManager.set(id, user, 1000 * 60);
+      return user;
     }
 
     return null;
