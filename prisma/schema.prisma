@@ -74,6 +74,7 @@ model House {
   assignments Assignment[]
   invites     Invite[]
   week        Int          @default(0)
+  paused      Boolean?      @default(false)
 }
 
 model Invite {
