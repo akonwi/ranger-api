@@ -145,7 +145,10 @@ export class AssignmentService {
         houseId: input.houseId,
       },
       orderBy: { week: "desc" },
+      // use the cursor to get the next page
       cursor: isPresent(input.cursor) ? { id: input.cursor } : undefined,
+      // omit the first result since it's the cursor
+      skip: 1,
       take: 10,
     });
   }

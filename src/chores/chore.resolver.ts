@@ -196,6 +196,7 @@ export class ChoreResolver {
 
     const _last = last(assignments);
     const endCursor = _last?.id;
+    // todo: this needs to be more robust because it's possible that the last assignment is the first assignment
     const hasNextPage = isNil(_last) ? false : _last.week > 0;
 
     return {
