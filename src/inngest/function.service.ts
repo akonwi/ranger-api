@@ -249,7 +249,10 @@ export class FunctionService {
         { cron: "TZ=America/New_York 00 20 * * 0" },
         async ({ step }) => {
           const houseIds = await step.run("Get all houses", () => {
-            return this._houseRepository.list({}, { id: true });
+            return this._houseRepository.list(
+              { paused: { not: true } },
+              { id: true },
+            );
           });
 
           const events = houseIds.map(house => ({

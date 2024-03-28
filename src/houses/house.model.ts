@@ -12,4 +12,7 @@ export class House {
 
   @Field(() => Int)
   week: number;
+
+  @Field()
+  paused?: boolean;
 }
