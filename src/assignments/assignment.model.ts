@@ -11,6 +11,9 @@ export class Assignment {
 
   userId: string;
 
+  @Field(() => Date)
+  createdAt: Date;
+
   @Field(() => Int)
   week: number;
 

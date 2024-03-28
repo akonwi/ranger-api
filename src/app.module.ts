@@ -19,9 +19,11 @@ import { UserResolver } from "./users/user.resolver";
 import { ViewerResolver } from "./viewer/viewer.resolver";
 import { FirebaseService } from "./firebase.service";
 import { ChoreService } from "./chores/chore.service";
+import { CacheModule } from "@nestjs/cache-manager";
 
 @Module({
   imports: [
+    CacheModule.register(),
     ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env"] }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

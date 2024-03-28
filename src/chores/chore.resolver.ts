@@ -15,9 +15,11 @@ import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
 import { inngest } from "src/inngest/inngest.provider";
-import { Maybe, isNil } from "src/utils";
+import { Maybe, isNil, last } from "src/utils";
 import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
+import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
+import { AssignmentService } from "src/assignments/assignment.service";
 
 @InputType()
 export class CadenceInput {
@@ -54,6 +56,7 @@ export class ChoreResolver {
   constructor(
     private readonly _choreRepository: ChoreRepository,
     private readonly _userService: UserService,
+    private readonly _assignmentService: AssignmentService,
   ) {}
 
   @Query(() => [Chore])
@@ -178,5 +181,26 @@ export class ChoreResolver {
       frequency: input.cadence?.frequency,
       customFrequency: input.cadence?.days,
     });
+  }
+
+  @ResolveField(() => PaginatedAssignmentHistory, { name: "history" })
+  async getHistory(
+    @Parent() chore: Chore,
+    @Args({ name: "after", nullable: true }) after?: string,
+  ): Promise<PaginatedAssignmentHistory> {
+    const assignments = await this._assignmentService.getHistory({
+      choreId: chore.id,
+      houseId: chore.houseId,
+      cursor: after,
+    });
+
+    const _last = last(assignments);
+    const endCursor = _last?.id;
+    const hasNextPage = isNil(_last) ? false : _last.week > 0;
+
+    return {
+      pageInfo: { hasNextPage, endCursor },
+      edges: assignments,
+    };
   }
 }

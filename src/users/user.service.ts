@@ -1,4 +1,5 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { AppMetadata, User } from "./user.model";
 import {
   GetUsers200ResponseOneOfInner,
@@ -12,7 +13,10 @@ import { Maybe } from "src/utils";
 export class UserService {
   private readonly _auth0: ManagementClient;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly _cacheManager: Cache,
+  ) {
     this._auth0 = new ManagementClient({
       domain: configService.getOrThrow("AUTH0_DOMAIN"),
       clientId: configService.getOrThrow("AUTH0_CLIENT_ID"),
@@ -21,10 +25,14 @@ export class UserService {
   }
 
   async get(id: string): Promise<Maybe<User>> {
+    const cached = await this._cacheManager.get<User>(id);
+    if (cached) return cached;
+
     const response = await this._auth0.users.get({ id });
 
     if (response.status === 200) {
-      return this._mapUser(response.data);
+      const user = this._mapUser(response.data);
+      this._cacheManager.set(id, user, 1000 * 60);
     }
 
     return null;
