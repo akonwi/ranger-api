@@ -28,11 +28,11 @@ export class HouseRepository {
 
   async update(
     id: string,
-    input: { week: number | undefined },
+    input: { week?: number; paused?: boolean },
   ): Promise<House> {
     return this._prisma.house.update({
       where: { id },
-      data: { week: input.week },
+      data: input,
     });
   }
 

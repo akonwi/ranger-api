@@ -76,4 +76,14 @@ export class HouseResolver {
       ([userId, assignments]) => ({ userId, assignments }),
     );
   }
+
+  @Mutation(() => [House])
+  async pauseAssignments(@CurrentUser() user: UserContext): Promise<House> {
+    return this._houseRepository.update(user.houseId, { paused: true });
+  }
+
+  @Mutation(() => [House])
+  async activateAssignments(@CurrentUser() user: UserContext): Promise<House> {
+    return this._houseRepository.update(user.houseId, { paused: false });
+  }
 }
