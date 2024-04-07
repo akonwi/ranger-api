@@ -149,7 +149,7 @@ export class AssignmentService {
       cursor: isPresent(input.cursor) ? { id: input.cursor } : undefined,
       // omit the first result since it's the cursor
       skip: 1,
-      take: 10,
+      take: 20,
     });
   }
 
