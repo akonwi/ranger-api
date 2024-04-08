@@ -77,13 +77,13 @@ export class HouseResolver {
     );
   }
 
-  @Mutation(() => [House])
-  async pauseAssignments(@CurrentUser() user: UserContext): Promise<House> {
+  @Mutation(() => House)
+  async pauseSchedule(@CurrentUser() user: UserContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: true });
   }
 
-  @Mutation(() => [House])
-  async activateAssignments(@CurrentUser() user: UserContext): Promise<House> {
+  @Mutation(() => House)
+  async resumeSchedule(@CurrentUser() user: UserContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: false });
   }
 }
