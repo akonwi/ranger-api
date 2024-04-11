@@ -45,4 +45,7 @@ export class Chore {
   day: number | null;
 
   designatedUserId: string | null;
+
+  @Field({ nullable: true })
+  rootId: string | null;
 }

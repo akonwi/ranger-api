@@ -14,12 +14,12 @@ import { Frequency } from "@prisma/client";
 import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
-import { inngest } from "src/inngest/inngest.provider";
 import { Maybe, isNil, last } from "src/utils";
 import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
 import { AssignmentService } from "src/assignments/assignment.service";
+import { ChoreService } from "./chore.service";
 
 @InputType()
 export class CadenceInput {
@@ -55,6 +55,7 @@ export class EditChoreInput extends CreateChoreInput {}
 export class ChoreResolver {
   constructor(
     private readonly _choreRepository: ChoreRepository,
+    private readonly _choreService: ChoreService,
     private readonly _userService: UserService,
     private readonly _assignmentService: AssignmentService,
   ) {}
@@ -131,34 +132,35 @@ export class ChoreResolver {
     @CurrentUser() user: UserContext,
     @Args("input") input: CreateChoreInput,
   ): Promise<Chore> {
-    if (input.cadence.frequency === Frequency.CUSTOM) {
-      if (isNil(input.cadence.days)) {
-        throw new Error("A custom frequency must have a 'days' value");
-      }
-    }
-
-    const chore = await this._choreRepository.create({
+    return this._choreService.create({
       name: input.name,
       description: input.description,
-      frequency: input.cadence?.frequency,
-      customFrequency: input.cadence?.days,
+      cadence: input.cadence,
       creatorId: user.id,
-      house: {
-        connect: {
-          id: user.houseId,
-        },
-      },
+      houseId: user.houseId,
     });
+  }
 
-    await inngest.send({
-      name: "chore.created",
-      data: {
-        houseId: user.houseId,
-        id: chore.id,
-      },
+  @Mutation(() => Chore)
+  async linkChore(
+    @Args("parentId") parentId: string,
+    @Args("childId") childId: string,
+  ): Promise<Chore> {
+    return this._choreService.createLinks({
+      rootId: parentId,
+      children: [childId],
     });
+  }
 
-    return chore;
+  @Mutation(() => Chore)
+  async unlinkChore(
+    @Args("parentId") parentId: string,
+    @Args("childId") childId: string,
+  ): Promise<Chore> {
+    return this._choreService.removeLinks({
+      rootId: parentId,
+      children: [childId],
+    });
   }
 
   @Mutation(() => Chore)
@@ -203,5 +205,10 @@ export class ChoreResolver {
       pageInfo: { hasNextPage, endCursor },
       edges: assignments,
     };
+  }
+
+  @ResolveField(() => [Chore], { name: "children" })
+  async getChildren(@Parent() chore: Chore): Promise<Chore[]> {
+    return this._choreService.listChildren(chore.id);
   }
 }
