@@ -40,6 +40,9 @@ model Chore {
   Assignment       Assignment[]
   designatedUserId String?
   isArchived       Boolean      @default(false)
+  rootId           String?
+  root             Chore?       @relation("LinkedChores", fields: [rootId], references: [id])
+  links            Chore[]      @relation("LinkedChores")
 
   @@index([id, houseId])
   @@index([houseId])
@@ -74,7 +77,7 @@ model House {
   assignments Assignment[]
   invites     Invite[]
   week        Int          @default(0)
-  paused      Boolean?      @default(false)
+  paused      Boolean?     @default(false)
 }
 
 model Invite {
