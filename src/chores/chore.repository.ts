@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Chore, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma.service";
-import { Maybe } from "src/utils";
+import { Maybe, isEmpty, isPresent } from "src/utils";
 
 @Injectable()
 export class ChoreRepository {
@@ -24,6 +24,8 @@ export class ChoreRepository {
     });
   }
 
+  readonly findMany = this._prisma.chore.findMany;
+
   async list(
     where: Prisma.ChoreWhereInput,
     options:
@@ -33,11 +35,19 @@ export class ChoreRepository {
     return this._prisma.chore.findMany({ where, ...options });
   }
 
-  async findUnassignedChores(input: { houseId: string; week: number }) {
+  async findUnassignedChores(input: {
+    houseId: string;
+    week: number;
+    ids?: string[];
+  }) {
     // chores that are not assigned yet or are not penalties this week
     return this._prisma.chore.findMany({
       where: {
         houseId: input.houseId,
+        id:
+          isPresent(input.ids) && !isEmpty(input.ids)
+            ? { in: input.ids }
+            : undefined,
         OR: [
           {
             Assignment: { none: {} },

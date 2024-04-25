@@ -97,9 +97,11 @@ export class ChoreService {
     return this._choreRepository.list({ rootId });
   }
 
-  async findUnassignedChores(input: { houseId: string; week: number }): Promise<
-    Chore[]
-  > {
+  async findUnassignedChores(input: {
+    houseId: string;
+    week: number;
+    ids?: string[];
+  }): Promise<Chore[]> {
     // chores that are not assigned yet or are not penalties this week
     const chores = await this._choreRepository.findUnassignedChores(input);
 

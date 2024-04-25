@@ -4,7 +4,17 @@ import { Assignment } from "./assignment.model";
 import { ChoreRepository } from "src/chores/chore.repository";
 import { HouseRepository } from "src/houses/house.repository";
 import { AssignmentRepository } from "./assignment.repository";
-import { Maybe, isEmpty, isNil, isPresent, toRecord } from "src/utils";
+import {
+  Maybe,
+  indexBy,
+  insist,
+  isEmpty,
+  isNil,
+  isPresent,
+  keys,
+  prune,
+  toRecord,
+} from "src/utils";
 import { House } from "src/houses/house.model";
 import { inngest } from "src/inngest/inngest.provider";
 
@@ -96,12 +106,109 @@ export class AssignmentService {
     return this._assignmentRepository.createMany(inputs);
   }
 
+  async assignPenalties({
+    houseId,
+    week,
+  }: { houseId: string; week: number }): Promise<void> {
+    const incompletes = await this.find({
+      houseId,
+      week: week - 1,
+    });
+    await this._assignmentRepository.createMany({
+      data: incompletes.map(i => ({
+        userId: i.userId,
+        choreId: i.choreId,
+        isPenalty: true,
+        houseId,
+        week,
+      })),
+    });
+  }
+
+  async assignPenaltyLinks({
+    houseId,
+    week,
+  }: { houseId: string; week: number }) {
+    const penaltiesWithLinks = await this._assignmentRepository.findMany({
+      where: {
+        week,
+        isPenalty: true,
+        chore: {
+          links: { some: {} },
+        },
+      },
+      include: {
+        chore: {
+          select: {
+            links: {
+              select: { id: true },
+            },
+          },
+        },
+      },
+    });
+    const penaltiesByChoreId = indexBy(penaltiesWithLinks, "choreId");
+
+    const linksToAssign = await this._choreRepository.findUnassignedChores({
+      week,
+      houseId,
+      ids: penaltiesWithLinks.flatMap(p => p.chore.links.map(l => l.id)),
+    });
+    await this._assignmentRepository.createMany({
+      data: linksToAssign.map(l => ({
+        userId: insist(penaltiesByChoreId.get(l.rootId!)).userId,
+        houseId: l.houseId,
+        choreId: l.id,
+        penalty: true,
+        week,
+      })),
+    });
+  }
+
+  async assignPenaltyRoots({
+    houseId,
+    week,
+  }: { houseId: string; week: number }) {
+    const penaltiesWithRoots = await this._assignmentRepository.findMany({
+      where: {
+        week,
+        isPenalty: true,
+        chore: {
+          rootId: { not: null },
+        },
+      },
+      include: {
+        chore: {
+          select: {
+            rootId: true,
+          },
+        },
+      },
+    });
+    const penaltiesByChoreId = indexBy(penaltiesWithRoots, "choreId");
+
+    const rootsToAssign = await this._choreRepository.findUnassignedChores({
+      week,
+      houseId,
+      ids: prune(penaltiesWithRoots.map(p => p.chore.rootId)),
+    });
+    await this._assignmentRepository.createMany({
+      data: rootsToAssign.map(root => ({
+        userId: insist(penaltiesByChoreId.get(root.id)).userId,
+        houseId: root.houseId,
+        choreId: root.id,
+        penalty: true,
+        week,
+      })),
+    });
+  }
+
   async find(
-    where: Parameters<AssignmentRepository["list"]>[0]["where"] & {
+    where: Parameters<AssignmentRepository["list"]>[0] & {
       houseId: string;
     },
   ): Promise<Assignment[]> {
-    return this._assignmentRepository.list({ where });
+    return this._assignmentRepository.findMany({ where });
   }
 
   async findLatestForChore(input: { choreId: string; houseId: string }) {

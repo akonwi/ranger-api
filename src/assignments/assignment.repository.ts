@@ -9,6 +9,9 @@ import { Maybe } from "src/utils";
 export class AssignmentRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
+  readonly findMany = this._prisma.assignment.findMany;
+  readonly createMany = this._prisma.assignment.createMany;
+
   async list(
     options: Parameters<Prisma.AssignmentDelegate["findMany"]>[0],
   ): Promise<Assignment[]> {
@@ -21,10 +24,6 @@ export class AssignmentRepository {
 
   async create(input: Prisma.AssignmentCreateInput): Promise<Assignment> {
     return this._prisma.assignment.create({ data: input });
-  }
-
-  async createMany(inputs: Prisma.AssignmentCreateManyInput[]) {
-    await this._prisma.assignment.createMany({ data: inputs });
   }
 
   async findLatestForChore(input: {
