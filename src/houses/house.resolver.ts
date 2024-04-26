@@ -11,7 +11,12 @@ import { UserService } from "src/users/user.service";
 import { Maybe } from "src/utils";
 import { HouseRepository } from "./house.repository";
 import { User } from "src/users/user.model";
-import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import {
+  CurrentUser,
+  CurrentMember,
+  MemberContext,
+  UserContext,
+} from "src/auth/currentUser.decorator";
 import { Chore } from "src/chores/chore.model";
 import { ChoreRepository } from "src/chores/chore.repository";
 import { MemberAssignment } from "src/assignments/memberAssignment.model";
@@ -49,7 +54,7 @@ export class HouseResolver {
 
   @Mutation(() => String)
   async createInvite(
-    @CurrentUser() user: UserContext,
+    @CurrentMember() user: MemberContext,
     @Args({ name: "email", type: () => String }) email: string,
   ): Promise<string> {
     return this._houseRepository.createInvite(user.houseId, email);
@@ -58,6 +63,11 @@ export class HouseResolver {
   @Query(() => House, { name: "myHouse", nullable: true })
   async getMyHouse(@CurrentUser() user: UserContext): Promise<Maybe<House>> {
     return this._houseRepository.getForUser(user.id);
+  }
+
+  @ResolveField("chores")
+  async paused(@Parent() house: House): Promise<boolean> {
+    return house.paused === true;
   }
 
   @ResolveField("chores", () => [Chore])
@@ -78,12 +88,12 @@ export class HouseResolver {
   }
 
   @Mutation(() => House)
-  async pauseSchedule(@CurrentUser() user: UserContext): Promise<House> {
+  async pauseSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: true });
   }
 
   @Mutation(() => House)
-  async resumeSchedule(@CurrentUser() user: UserContext): Promise<House> {
+  async resumeSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: false });
   }
 }

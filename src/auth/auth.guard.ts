@@ -13,6 +13,7 @@ import * as jose from "jose";
 import { HouseRepository } from "src/houses/house.repository";
 import { IS_PUBLIC_KEY } from "./public.decorator";
 import { UserContext } from "./currentUser.decorator";
+import { Maybe, isNil } from "src/utils";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -46,14 +47,14 @@ export class AuthGuard implements CanActivate {
 
     request.user = {
       id: userId,
-      houseId: house?.id,
+      houseId: house?.id ?? null,
     } satisfies UserContext;
     return true;
   }
 
-  private async _getTokenFromHeader(request: Request): Promise<string> {
+  private _getTokenFromHeader(request: Request): Maybe<string> {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === "Bearer" ? token : undefined;
+    return type === "Bearer" ? token : null;
   }
 
   // returns the user id
@@ -68,11 +69,12 @@ export class AuthGuard implements CanActivate {
         issuer: this._configService.getOrThrow("AUTH0_ISSUER_BASE_URL"),
       },
     );
-    if (!result.payload.sub) {
+    const sub = result.payload.sub;
+    if (isNil(sub)) {
       this._logger.error("Invalid token");
       throw new UnauthorizedException();
     }
 
-    return result.payload.sub;
+    return sub;
   }
 }

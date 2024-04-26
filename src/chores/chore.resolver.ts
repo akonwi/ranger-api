@@ -13,9 +13,14 @@ import {
 import { Frequency } from "@prisma/client";
 import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
-import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import {
+  CurrentUser,
+  CurrentMember,
+  MemberContext,
+  UserContext,
+} from "src/auth/currentUser.decorator";
 import { inngest } from "src/inngest/inngest.provider";
-import { Maybe, isNil, last } from "src/utils";
+import { Maybe, isNil, isPresent, last } from "src/utils";
 import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
@@ -32,8 +37,8 @@ export class CadenceInput {
 
 @InputType()
 export class CreateChoreInput {
-  @Field({ nullable: true })
-  name?: string;
+  @Field()
+  name: string;
 
   @Field({ nullable: true })
   description?: string;
@@ -41,8 +46,8 @@ export class CreateChoreInput {
   @Field({ nullable: true })
   designatedUserId?: string;
 
-  @Field(() => CadenceInput, { nullable: true })
-  cadence?: CadenceInput;
+  @Field(() => CadenceInput)
+  cadence: CadenceInput;
 
   @Field(() => Int, { nullable: true })
   dayOfWeek?: number;
@@ -60,7 +65,7 @@ export class ChoreResolver {
   ) {}
 
   @Query(() => [Chore])
-  async chores(@CurrentUser() user: UserContext) {
+  async chores(@CurrentMember() user: MemberContext) {
     return this._choreRepository.list({ houseId: user.houseId });
   }
 
@@ -76,6 +81,11 @@ export class ChoreResolver {
     if (isNil(chore.designatedUserId)) return null;
 
     return this._userService.get(chore.designatedUserId);
+  }
+
+  @ResolveField("description", () => String)
+  async description(@Parent() chore: Chore): Promise<string> {
+    return chore.description ?? "";
   }
 
   @ResolveField("day", () => DayValue, { nullable: true })
@@ -128,7 +138,7 @@ export class ChoreResolver {
 
   @Mutation(() => Chore)
   async createChore(
-    @CurrentUser() user: UserContext,
+    @CurrentMember() user: MemberContext,
     @Args("input") input: CreateChoreInput,
   ): Promise<Chore> {
     if (input.cadence.frequency === Frequency.CUSTOM) {

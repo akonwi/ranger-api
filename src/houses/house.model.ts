@@ -1,4 +1,5 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql";
+import { Maybe } from "src/utils";
 
 @ObjectType()
 export class House {
@@ -13,6 +14,6 @@ export class House {
   @Field(() => Int)
   week: number;
 
-  @Field()
-  paused?: boolean;
+  @Field(() => Boolean, { nullable: false })
+  paused: Maybe<boolean>;
 }

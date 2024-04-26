@@ -96,12 +96,15 @@ export class AssignmentService {
     return this._assignmentRepository.createMany(inputs);
   }
 
-  async find(
-    where: Parameters<AssignmentRepository["list"]>[0]["where"] & {
-      houseId: string;
-    },
-  ): Promise<Assignment[]> {
-    return this._assignmentRepository.list({ where });
+  async findForWeek(input: {
+    houseId: string;
+    week: number;
+    isPenalty?: boolean;
+    chore?: {
+      designatedUserId?: Maybe<string>;
+    };
+  }): Promise<Assignment[]> {
+    return this._assignmentRepository.list({ where: input });
   }
 
   async findLatestForChore(input: { choreId: string; houseId: string }) {

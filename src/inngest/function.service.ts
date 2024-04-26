@@ -7,7 +7,7 @@ import { ChoreRepository } from "src/chores/chore.repository";
 import { HouseRepository } from "src/houses/house.repository";
 import { groupBy, shuffle } from "lodash";
 import { ChoreService } from "src/chores/chore.service";
-import { isNil, isPresent, toRecord } from "src/utils";
+import { isEmpty, isNil, isPresent, toRecord } from "src/utils";
 import { NonRetriableError } from "inngest";
 
 @Injectable()
@@ -65,7 +65,7 @@ export class FunctionService {
             return user?.appMetadata.deviceTokens;
           });
 
-          if (deviceTokens.length === 0) return;
+          if (isNil(deviceTokens) || isEmpty(deviceTokens)) return;
 
           await step.run("Send notification", () =>
             this._firebaseService.sendNotification({
@@ -98,6 +98,8 @@ export class FunctionService {
               async ([userId, assignments]) =>
                 step.run(`Send for ${userId}`, async () => {
                   const user = await this._userService.get(userId);
+                  if (isNil(user)) return;
+
                   const choreNames = await this._choreRepository.list(
                     {
                       id: { in: assignments.map(a => a.choreId) },
@@ -156,7 +158,7 @@ export class FunctionService {
           const previousAssignments = await step.run(
             "Find previous assignments",
             async () =>
-              this._assignmentService.find({
+              this._assignmentService.findForWeek({
                 houseId,
                 week: lastWeek,
               }),
@@ -189,7 +191,7 @@ export class FunctionService {
                 houseId,
                 week,
                 choreId: c.id,
-                userId: c.designatedUserId,
+                userId: c.designatedUserId!,
                 isPenalty: false,
               })),
             );
@@ -201,12 +203,13 @@ export class FunctionService {
 
           await step.run("Assign remaining chores", async () => {
             for (const chore of remainingChores) {
-              const currentAssignments = await this._assignmentService.find({
-                houseId,
-                week,
-                isPenalty: false,
-                chore: { designatedUserId: null },
-              });
+              const currentAssignments =
+                await this._assignmentService.findForWeek({
+                  houseId,
+                  week,
+                  isPenalty: false,
+                  chore: { designatedUserId: null },
+                });
               const lastAssignment =
                 await this._assignmentService.findLatestForChore({
                   choreId: chore.id,

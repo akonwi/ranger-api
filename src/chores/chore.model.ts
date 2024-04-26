@@ -1,5 +1,6 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Frequency } from "@prisma/client";
+import { Maybe } from "src/utils";
 
 registerEnumType(Frequency, { name: "Frequency" });
 
@@ -32,8 +33,8 @@ export class Chore {
   @Field()
   name: string;
 
-  @Field()
-  description: string;
+  @Field(() => String, { nullable: false })
+  description: Maybe<string>;
 
   @Field()
   houseId: string;
