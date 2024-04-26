@@ -13,29 +13,30 @@ type ChoreValidationError = {
 
 @Injectable()
 export class ChoreService {
-  constructor(private readonly _choreRepository: ChoreRepository) { }
+  constructor(private readonly _choreRepository: ChoreRepository) {}
 
   async create(input: {
     name: string;
     description: string;
     cadence:
-    | { frequency: typeof Frequency.CUSTOM; days: number }
-    | { frequency: Frequency };
+      | { frequency: typeof Frequency.CUSTOM; days: number }
+      | { frequency: Frequency };
     creatorId: string;
     houseId: string;
   }): Promise<Result<Chore, ChoreValidationError>> {
+    const name = input.name.trim();
     const existingChore = await this._choreRepository.findFirst({
-      where: { name: input.name },
+      where: { name: { mode: "insensitive", equals: name } },
     });
     if (isPresent(existingChore))
       return notOK({
         code: "VALIDATION_ERROR",
         path: "input.name",
-        message: "Must be unique",
+        message: "Name must be unique",
       });
 
     const chore = await this._choreRepository.create({
-      name: input.name,
+      name: name,
       description: input.description,
       frequency: input.cadence.frequency,
       customFrequency: "days" in input.cadence ? input.cadence.days : null,
