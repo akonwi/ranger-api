@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ChoreRepository } from "./chore.repository";
 import { Chore } from "./chore.model";
 import { Frequency } from "@prisma/client";
-import { insist } from "src/utils";
+import { insist, isPresent } from "src/utils";
 import { inngest } from "src/inngest/inngest.provider";
 
 @Injectable()
@@ -18,6 +18,11 @@ export class ChoreService {
     creatorId: string;
     houseId: string;
   }): Promise<Chore> {
+    const existingChore = await this._choreRepository.findFirst({
+      where: { name: input.name },
+    });
+    if (isPresent(existingChore)) throw new Error("Chore name must be unique");
+
     const chore = await this._choreRepository.create({
       name: input.name,
       description: input.description,
