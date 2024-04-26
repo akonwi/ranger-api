@@ -13,8 +13,8 @@ export class ViewerResolver {
     private readonly _userService: UserService,
   ) {}
 
-  @Query(() => Viewer)
-  async viewer(@CurrentUser() ctx: UserContext): Promise<Viewer> {
+  @Query(() => Viewer, { nullable: true })
+  async viewer(@CurrentUser() ctx: UserContext): Promise<Maybe<Viewer>> {
     return this._userService.get(ctx.id);
   }
 

@@ -13,6 +13,7 @@ import { UserService } from "src/users/user.service";
 import { User } from "src/users/user.model";
 import { AssignmentService } from "./assignment.service";
 import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import { isNil } from "src/utils";
 
 @Resolver(() => Assignment)
 export class AssignmentResolver {
@@ -24,12 +25,16 @@ export class AssignmentResolver {
 
   @ResolveField("chore", () => Chore)
   async getChore(@Parent() assignment: Assignment): Promise<Chore> {
-    return this._choreRepository.get(assignment.choreId);
+    const chore = await this._choreRepository.get(assignment.choreId);
+    if (isNil(chore)) throw new Error("Chore not found");
+    return chore;
   }
 
   @ResolveField("user", () => User)
   async getUser(@Parent() assignment: Assignment): Promise<User> {
-    return this._userService.get(assignment.userId);
+    const user = await this._userService.get(assignment.userId);
+    if (isNil(user)) throw new Error("User not found");
+    return user;
   }
 
   @Mutation(() => Assignment)

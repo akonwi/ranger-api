@@ -1,10 +1,16 @@
+// treat undefined and null the same when interacting with 3rd party libraries
 export type Nil = undefined | null;
 
 export function isNil<T>(thing: T | Nil): thing is Nil {
   return !isPresent(thing);
 }
 
+// prefer null for 1st party code
 export type Maybe<T> = T | null;
+
+export type NoNil<T> = {
+  [P in keyof T]: Exclude<T[P], Nil>;
+};
 
 export function guard<T>(
   thing: Maybe<T>,
