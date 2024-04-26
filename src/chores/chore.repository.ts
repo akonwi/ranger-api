@@ -7,6 +7,9 @@ import { Maybe } from "src/utils";
 export class ChoreRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
+  readonly findFirst = this._prisma.chore.findFirst;
+  readonly findMany = this._prisma.chore.findMany;
+
   async get(id: string): Promise<Maybe<Chore>> {
     return this._prisma.chore.findUnique({ where: { id } });
   }
