@@ -25,6 +25,7 @@ import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
 import { AssignmentService } from "src/assignments/assignment.service";
+import { ChoreService } from "./chore.service";
 
 @InputType()
 export class CadenceInput {
@@ -59,6 +60,7 @@ export class EditChoreInput extends CreateChoreInput {}
 @Resolver(() => Chore)
 export class ChoreResolver {
   constructor(
+    private readonly _choreService: ChoreService,
     private readonly _choreRepository: ChoreRepository,
     private readonly _userService: UserService,
     private readonly _assignmentService: AssignmentService,
@@ -147,28 +149,13 @@ export class ChoreResolver {
       }
     }
 
-    const chore = await this._choreRepository.create({
+    return this._choreService.create({
       name: input.name,
-      description: input.description,
-      frequency: input.cadence?.frequency,
-      customFrequency: input.cadence?.days,
+      description: input.description ?? "",
+      cadence: input.cadence,
       creatorId: user.id,
-      house: {
-        connect: {
-          id: user.houseId,
-        },
-      },
+      houseId: user.houseId,
     });
-
-    await inngest.send({
-      name: "chore.created",
-      data: {
-        houseId: user.houseId,
-        id: chore.id,
-      },
-    });
-
-    return chore;
   }
 
   @Mutation(() => Chore)
