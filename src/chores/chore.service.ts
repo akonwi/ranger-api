@@ -7,14 +7,14 @@ import { inngest } from "src/inngest/inngest.provider";
 
 @Injectable()
 export class ChoreService {
-  constructor(private readonly _choreRepository: ChoreRepository) {}
+  constructor(private readonly _choreRepository: ChoreRepository) { }
 
   async create(input: {
     name: string;
     description: string;
     cadence:
-      | { frequency: typeof Frequency.CUSTOM; days: number }
-      | { frequency: Frequency };
+    | { frequency: typeof Frequency.CUSTOM; days: number }
+    | { frequency: Frequency };
     creatorId: string;
     houseId: string;
   }): Promise<Chore> {
