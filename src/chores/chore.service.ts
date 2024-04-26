@@ -2,26 +2,37 @@ import { Injectable } from "@nestjs/common";
 import { ChoreRepository } from "./chore.repository";
 import { Chore } from "./chore.model";
 import { Frequency } from "@prisma/client";
-import { insist, isPresent } from "src/utils";
+import { Result, insist, isPresent, notOK, ok } from "src/utils";
 import { inngest } from "src/inngest/inngest.provider";
+
+type ChoreValidationError = {
+  code: "VALIDATION_ERROR";
+  path: string;
+  message: string;
+};
 
 @Injectable()
 export class ChoreService {
-  constructor(private readonly _choreRepository: ChoreRepository) {}
+  constructor(private readonly _choreRepository: ChoreRepository) { }
 
   async create(input: {
     name: string;
     description: string;
     cadence:
-      | { frequency: typeof Frequency.CUSTOM; days: number }
-      | { frequency: Frequency };
+    | { frequency: typeof Frequency.CUSTOM; days: number }
+    | { frequency: Frequency };
     creatorId: string;
     houseId: string;
-  }): Promise<Chore> {
+  }): Promise<Result<Chore, ChoreValidationError>> {
     const existingChore = await this._choreRepository.findFirst({
       where: { name: input.name },
     });
-    if (isPresent(existingChore)) throw new Error("Chore name must be unique");
+    if (isPresent(existingChore))
+      return notOK({
+        code: "VALIDATION_ERROR",
+        path: "input.name",
+        message: "Must be unique",
+      });
 
     const chore = await this._choreRepository.create({
       name: input.name,
@@ -44,7 +55,7 @@ export class ChoreService {
       },
     });
 
-    return chore;
+    return ok(chore);
   }
 
   async findUnassignedChores(input: { houseId: string; week: number }): Promise<
