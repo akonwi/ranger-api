@@ -24,12 +24,25 @@ export function insist<T>(thing: Maybe<T>, message?: string): T {
   return thing;
 }
 
-export type Result<Data, Error = Nil> = Error extends Nil
-  ? [Data]
-  : [Data, Nil] | [Nil, Error];
+export type OK<Data> = { get(): Data; error: null };
+export function ok<Data>(data: Data): OK<Data> {
+  return { get: () => data, error: null };
+}
+
+export type NotOK<Error> = { get(): null; error: Error };
+export function notOK<Error>(error: Error): NotOK<Error> {
+  return { get: () => null, error };
+}
+
+export type Result<Data, Error = null> = OK<Data> | NotOK<Error>;
+
+export function isOK<D, E>(result: Result<D, E>): result is OK<D> {
+  const { get, error } = result;
+  return isPresent(get()) && isNil(error);
+}
 
 export function isPresent<T>(thing: Maybe<T>): thing is T {
-  return thing != null;
+  return thing !== null && thing !== undefined;
 }
 
 export function isEmpty<T>(list: T[] | string): boolean {

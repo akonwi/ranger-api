@@ -13,19 +13,14 @@ import {
 import { Frequency } from "@prisma/client";
 import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
-import {
-  CurrentUser,
-  CurrentMember,
-  MemberContext,
-  UserContext,
-} from "src/auth/currentUser.decorator";
-import { inngest } from "src/inngest/inngest.provider";
-import { Maybe, isNil, isPresent, last } from "src/utils";
+import { CurrentMember, MemberContext } from "src/auth/currentUser.decorator";
+import { Maybe, isNil, isOK, last } from "src/utils";
 import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
 import { AssignmentService } from "src/assignments/assignment.service";
 import { ChoreService } from "./chore.service";
+import { GraphQLError } from "graphql";
 
 @InputType()
 export class CadenceInput {
@@ -145,17 +140,36 @@ export class ChoreResolver {
   ): Promise<Chore> {
     if (input.cadence.frequency === Frequency.CUSTOM) {
       if (isNil(input.cadence.days)) {
-        throw new Error("A custom frequency must have a 'days' value");
+        throw new GraphQLError("A custom frequency must have a 'days' value", {
+          path: "input.cadence.days".split("."),
+          extensions: {
+            code: "VALIDATION_ERROR",
+          },
+        });
       }
     }
 
-    return this._choreService.create({
+    const result = await this._choreService.create({
       name: input.name,
       description: input.description ?? "",
       cadence: input.cadence,
       creatorId: user.id,
       houseId: user.houseId,
     });
+
+    if (isOK(result)) return result.get();
+
+    const { error } = result;
+    switch (error.code) {
+      case "VALIDATION_ERROR":
+      default:
+        throw new GraphQLError(error.message, {
+          path: error.path.split("."),
+          extensions: {
+            code: error.code,
+          },
+        });
+    }
   }
 
   @Mutation(() => Chore)
