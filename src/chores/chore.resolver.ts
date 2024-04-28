@@ -14,7 +14,7 @@ import { Frequency } from "@prisma/client";
 import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
 import { CurrentMember, MemberContext } from "src/auth/currentUser.decorator";
-import { Maybe, isNil, isOK, last } from "src/utils";
+import { Maybe, isNil, isOK, isPresent, last } from "src/utils";
 import { User } from "src/users/user.model";
 import { UserService } from "src/users/user.service";
 import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
@@ -217,6 +217,11 @@ export class ChoreResolver {
       pageInfo: { hasNextPage, endCursor },
       edges: assignments,
     };
+  }
+
+  @ResolveField(() => Boolean, { name: "isDeleted" })
+  async isDeleted(@Parent() chore: Chore): Promise<boolean> {
+    return isPresent(chore.deletedAt);
   }
 
   @Mutation(() => Boolean)

@@ -46,4 +46,7 @@ export class Chore {
   day: number | null;
 
   designatedUserId: string | null;
+
+  @Field(() => Date, { nullable: true })
+  deletedAt: Maybe<Date>;
 }
