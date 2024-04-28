@@ -215,4 +215,13 @@ export class ChoreResolver {
       edges: assignments,
     };
   }
+
+  @Mutation(() => Boolean)
+  async deleteChore(
+    @CurrentMember() user: MemberContext,
+    @Args("id") id: string,
+  ): Promise<boolean> {
+    await this._choreService.delete({ houseId: user.houseId, id });
+    return true;
+  }
 }

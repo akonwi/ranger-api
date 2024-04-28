@@ -61,20 +61,25 @@ export class AuthGuard implements CanActivate {
   private async _validateToken(token: string): Promise<string> {
     const jwks = this._configService.getOrThrow("JWKS");
 
-    const result = await jose.jwtVerify(
-      token,
-      jose.createLocalJWKSet(JSON.parse(jwks)),
-      {
-        audience: this._configService.getOrThrow("AUTH0_AUDIENCE"),
-        issuer: this._configService.getOrThrow("AUTH0_ISSUER_BASE_URL"),
-      },
-    );
-    const sub = result.payload.sub;
-    if (isNil(sub)) {
-      this._logger.error("Invalid token");
-      throw new UnauthorizedException();
-    }
+    try {
+      const result = await jose.jwtVerify(
+        token,
+        jose.createLocalJWKSet(JSON.parse(jwks)),
+        {
+          audience: this._configService.getOrThrow("AUTH0_AUDIENCE"),
+          issuer: this._configService.getOrThrow("AUTH0_ISSUER_BASE_URL"),
+        },
+      );
 
-    return sub;
+      const sub = result.payload.sub;
+      if (isNil(sub)) {
+        throw new Error("Invalid token");
+      }
+
+      return sub;
+    } catch (e) {
+      this._logger.error(e);
+      throw new UnauthorizedException(e);
+    }
   }
 }

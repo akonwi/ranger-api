@@ -74,6 +74,15 @@ export class ChoreService {
     );
   }
 
+  async delete(input: { houseId: string; id: string }): Promise<void> {
+    await this._choreRepository.delete({
+      where: {
+        id: input.id,
+        houseId: input.houseId,
+      },
+    });
+  }
+
   private _isFrequencySatisfied(input: {
     chore: Chore;
     lastCompletedWeek: number;
