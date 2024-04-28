@@ -22,6 +22,13 @@ type ChoreCreated = {
   };
 };
 
+type ChoreDeleted = {
+  data: {
+    id: string;
+    houseId: string;
+  };
+};
+
 type AssignHouseChoresForWeek = {
   data: {
     houseId: string;
@@ -57,6 +64,7 @@ type AssignmentsReassigned = {
 
 export type RangerEvents = {
   "chore.created": ChoreCreated;
+  "chore.deleted": ChoreDeleted;
   "assignments.reassigned": AssignmentsReassigned;
   "notifications.house.chores-due": {
     data: {

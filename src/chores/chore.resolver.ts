@@ -63,7 +63,10 @@ export class ChoreResolver {
 
   @Query(() => [Chore])
   async chores(@CurrentMember() user: MemberContext) {
-    return this._choreRepository.list({ houseId: user.houseId });
+    return this._choreRepository.list({
+      houseId: user.houseId,
+      deletedAt: null,
+    });
   }
 
   @Query(() => Chore, { name: "chore", nullable: true })
@@ -220,8 +223,7 @@ export class ChoreResolver {
   async deleteChore(
     @CurrentMember() user: MemberContext,
     @Args("id") id: string,
-  ): Promise<boolean> {
-    await this._choreService.delete({ houseId: user.houseId, id });
-    return true;
+  ): Promise<Chore> {
+    return this._choreService.delete({ houseId: user.houseId, id });
   }
 }

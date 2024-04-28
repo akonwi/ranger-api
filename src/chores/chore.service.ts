@@ -74,13 +74,16 @@ export class ChoreService {
     );
   }
 
-  async delete(input: { houseId: string; id: string }): Promise<void> {
-    await this._choreRepository.delete({
-      where: {
-        id: input.id,
-        houseId: input.houseId,
-      },
+  async delete(input: { houseId: string; id: string }): Promise<Chore> {
+    const chore = await this._choreRepository.update({
+      id: input.id,
+      deletedAt: new Date(),
     });
+    await inngest.send({
+      name: "chore.deleted",
+      data: input,
+    });
+    return chore;
   }
 
   private _isFrequencySatisfied(input: {
