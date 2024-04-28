@@ -15,6 +15,15 @@ type ChoreValidationError = {
 export class ChoreService {
   constructor(private readonly _choreRepository: ChoreRepository) {}
 
+  async getActive(input: { houseId: string }): Promise<Chore[]> {
+    return this._choreRepository.findMany({
+      where: {
+        houseId: input.houseId,
+        deletedAt: null,
+      },
+    });
+  }
+
   async create(input: {
     name: string;
     description: string;

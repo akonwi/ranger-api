@@ -27,15 +27,6 @@ export class ChoreRepository {
     });
   }
 
-  async list(
-    where: Prisma.ChoreWhereInput,
-    options:
-      | { include?: Prisma.ChoreInclude }
-      | { select?: Prisma.ChoreSelect } = {},
-  ): Promise<Chore[]> {
-    return this._prisma.chore.findMany({ where, ...options });
-  }
-
   async findUnassignedChores(input: { houseId: string; week: number }) {
     // chores that are not assigned yet or are not penalties this week
     return this._prisma.chore.findMany({

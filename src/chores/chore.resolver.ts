@@ -63,9 +63,8 @@ export class ChoreResolver {
 
   @Query(() => [Chore])
   async chores(@CurrentMember() user: MemberContext) {
-    return this._choreRepository.list({
+    return this._choreService.getActive({
       houseId: user.houseId,
-      deletedAt: null,
     });
   }
 
@@ -224,10 +223,10 @@ export class ChoreResolver {
     return isPresent(chore.deletedAt);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Chore)
   async deleteChore(
     @CurrentMember() user: MemberContext,
-    @Args("id") id: string,
+    @Args("id", { type: () => ID }) id: string,
   ): Promise<Chore> {
     return this._choreService.delete({ houseId: user.houseId, id });
   }

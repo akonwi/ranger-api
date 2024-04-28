@@ -48,16 +48,14 @@ export class FunctionService {
             return user?.nickname ?? user?.name ?? "Someone";
           });
           const choreNames = await step.run("Get chore names", async () => {
-            const chores = await this._choreRepository.list(
-              {
+            const chores = await this._choreRepository.findMany({
+              where: {
                 Assignment: { some: { id: { in: assignmentIds } } },
               },
-              {
-                select: {
-                  name: true,
-                },
+              select: {
+                name: true,
               },
-            );
+            });
             return chores.map(c => c.name);
           });
           const deviceTokens = await step.run("Get device tokens", async () => {
@@ -100,12 +98,12 @@ export class FunctionService {
                   const user = await this._userService.get(userId);
                   if (isNil(user)) return;
 
-                  const choreNames = await this._choreRepository.list(
-                    {
+                  const choreNames = await this._choreRepository.findMany({
+                    where: {
                       id: { in: assignments.map(a => a.choreId) },
                     },
-                    { select: { name: true } },
-                  );
+                    select: { name: true },
+                  });
                   return this._firebaseService.sendNotification({
                     deviceTokens: user.appMetadata.deviceTokens,
                     notification: {
