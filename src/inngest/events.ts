@@ -62,9 +62,17 @@ type AssignmentsReassigned = {
   };
 };
 
+type HouseDeleted = {
+  data: {
+    id: string;
+    memberIds: string[];
+  };
+};
+
 export type RangerEvents = {
   "chore.created": ChoreCreated;
   "chore.deleted": ChoreDeleted;
+  "house.deleted": HouseDeleted;
   "assignments.reassigned": AssignmentsReassigned;
   "notifications.house.chores-due": {
     data: {

@@ -8,6 +8,10 @@ import { Prisma } from "@prisma/client";
 export class HouseRepository {
   constructor(private _prisma: PrismaService) {}
 
+  async find(id: string): Promise<Maybe<House>> {
+    return this._prisma.house.findUnique({ where: { id } });
+  }
+
   async list(
     where: Prisma.HouseWhereInput,
     select?: Prisma.HouseSelect,

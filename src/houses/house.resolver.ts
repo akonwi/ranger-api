@@ -21,11 +21,13 @@ import { Chore } from "../chores/chore.model";
 import { MemberAssignment } from "../assignments/memberAssignment.model";
 import { AssignmentService } from "../assignments/assignment.service";
 import { ChoreService } from "../chores/chore.service";
+import { HouseService } from "./house.service";
 
 @Resolver(() => House)
 export class HouseResolver {
   constructor(
     private readonly _houseRepository: HouseRepository,
+    private readonly _houseService: HouseService,
     private readonly _userService: UserService,
     private readonly _choreService: ChoreService,
     private readonly _assignmentService: AssignmentService,
@@ -99,7 +101,7 @@ export class HouseResolver {
 
   @Mutation(() => Boolean)
   async destroyHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
-    await this._houseRepository.destroy(user.houseId);
+    await this._houseService.destroy(user.houseId);
     return true;
   }
 }
