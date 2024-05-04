@@ -96,4 +96,10 @@ export class HouseResolver {
   async resumeSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: false });
   }
+
+  @Mutation(() => Boolean)
+  async destroyHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
+    await this._houseRepository.destroy(user.houseId);
+    return true;
+  }
 }
