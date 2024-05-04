@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { orderBy } from "lodash";
 import { Assignment } from "./assignment.model";
-import { ChoreRepository } from "src/chores/chore.repository";
-import { HouseRepository } from "src/houses/house.repository";
+import { ChoreRepository } from "../chores/chore.repository";
+import { HouseRepository } from "../houses/house.repository";
 import { AssignmentRepository } from "./assignment.repository";
-import { Maybe, isEmpty, isNil, isPresent, toRecord } from "src/utils";
-import { House } from "src/houses/house.model";
-import { inngest } from "src/inngest/inngest.provider";
+import { Maybe, isEmpty, isNil, isPresent, toRecord } from "../utils";
+import { House } from "../houses/house.model";
+import { inngest } from "../inngest/inngest.provider";
 
 @Injectable()
 export class AssignmentService {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { House } from "./house.model";
-import { PrismaService } from "src/prisma.service";
-import { Maybe, isNil } from "src/utils";
+import { PrismaService } from "../prisma.service";
+import { Maybe, isNil } from "../utils";
 import { Prisma } from "@prisma/client";
 
 @Injectable()
@@ -68,5 +68,9 @@ export class HouseRepository {
     });
 
     return invite.email;
+  }
+
+  async destroy(id: string): Promise<void> {
+    await this._prisma.house.delete({ where: { id } });
   }
 }
