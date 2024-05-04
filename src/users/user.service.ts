@@ -52,6 +52,10 @@ export class UserService {
     return [];
   }
 
+  async delete(id: string): Promise<void> {
+    await this._auth0.users.delete({ id });
+  }
+
   async updateAppMetadata(
     id: string,
     input: Partial<Pick<AppMetadata, "deviceTokens">>,

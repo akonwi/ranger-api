@@ -267,6 +267,17 @@ export class FunctionService {
           await step.sendEvent("Send events for each house", events);
         },
       ),
+      inngest.createFunction(
+        { id: "house-deleted", name: "On House Deleted" },
+        { event: "house.deleted" },
+        async ({ event, step }) => {
+          await step.run("Delete users", async () => {
+            await Promise.all(
+              event.data.memberIds.map(id => this._userService.delete(id)),
+            );
+          });
+        },
+      ),
     ];
   }
 }
