@@ -74,7 +74,7 @@ export class UserService {
       name: u.name,
       email: u.email,
       nickname: u.nickname,
-      appMetadata: this._mapAppMetadata(u.app_metadata),
+      appMetadata: this._mapAppMetadata(u.app_metadata ?? {}),
     };
   }
 
