@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { ChoreRepository } from "./chore.repository";
 import { Chore } from "./chore.model";
 import { Frequency } from "@prisma/client";
-import { Result, insist, isPresent, notOK, ok } from "src/utils";
-import { inngest } from "src/inngest/inngest.provider";
+import { Result, insist, isPresent, notOK, ok } from "../utils";
+import { inngest } from "../inngest/inngest.provider";
 
 type ChoreValidationError = {
   code: "VALIDATION_ERROR";

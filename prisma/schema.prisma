@@ -33,7 +33,7 @@ model Chore {
   day              Int?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @default(now()) @updatedAt
-  house            House        @relation(fields: [houseId], references: [id])
+  house            House        @relation(fields: [houseId], references: [id], onDelete: Cascade)
   houseId          String
   creatorId        String
   description      String?      @default("")
@@ -50,8 +50,8 @@ model Assignment {
   id        String   @id @default(cuid())
   userId    String
   houseId   String
-  house     House    @relation(fields: [houseId], references: [id])
-  chore     Chore    @relation(fields: [choreId], references: [id])
+  house     House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  chore     Chore    @relation(fields: [choreId], references: [id], onDelete: Cascade)
   choreId   String
   week      Int
   completed Boolean  @default(false)
@@ -80,6 +80,6 @@ model House {
 
 model Invite {
   email   String @id
-  house   House  @relation(fields: [houseId], references: [id])
+  house   House  @relation(fields: [houseId], references: [id], onDelete: Cascade)
   houseId String
 }

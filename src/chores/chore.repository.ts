@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Chore, Prisma } from "@prisma/client";
-import { PrismaService } from "src/prisma.service";
-import { Maybe } from "src/utils";
+import { PrismaService } from "../prisma.service";
+import { Maybe } from "../utils";
 
 @Injectable()
 export class ChoreRepository {

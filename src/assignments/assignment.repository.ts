@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { PrismaService } from "src/prisma.service";
+import { PrismaService } from "../prisma.service";
 import { Assignment } from "./assignment.model";
 import { groupBy } from "lodash";
-import { Maybe } from "src/utils";
+import { Maybe } from "../utils";
 
 @Injectable()
 export class AssignmentRepository {

@@ -1,12 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { House } from "./house.model";
-import { PrismaService } from "src/prisma.service";
-import { Maybe, isNil } from "src/utils";
+import { PrismaService } from "../prisma.service";
+import { Maybe, isNil } from "../utils";
 import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class HouseRepository {
   constructor(private _prisma: PrismaService) {}
+
+  async find(id: string): Promise<Maybe<House>> {
+    return this._prisma.house.findUnique({ where: { id } });
+  }
 
   async list(
     where: Prisma.HouseWhereInput,
@@ -68,5 +72,9 @@ export class HouseRepository {
     });
 
     return invite.email;
+  }
+
+  async destroy(id: string): Promise<void> {
+    await this._prisma.house.delete({ where: { id } });
   }
 }

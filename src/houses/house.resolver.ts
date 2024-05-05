@@ -7,28 +7,28 @@ import {
   Resolver,
 } from "@nestjs/graphql";
 import { House } from "./house.model";
-import { UserService } from "src/users/user.service";
-import { Maybe } from "src/utils";
+import { UserService } from "../users/user.service";
+import { Maybe } from "../utils";
 import { HouseRepository } from "./house.repository";
-import { User } from "src/users/user.model";
+import { User } from "../users/user.model";
 import {
   CurrentUser,
   CurrentMember,
   MemberContext,
   UserContext,
-} from "src/auth/currentUser.decorator";
-import { Chore } from "src/chores/chore.model";
-import { ChoreRepository } from "src/chores/chore.repository";
-import { MemberAssignment } from "src/assignments/memberAssignment.model";
-import { AssignmentService } from "src/assignments/assignment.service";
-import { ChoreService } from "src/chores/chore.service";
+} from "../auth/currentUser.decorator";
+import { Chore } from "../chores/chore.model";
+import { MemberAssignment } from "../assignments/memberAssignment.model";
+import { AssignmentService } from "../assignments/assignment.service";
+import { ChoreService } from "../chores/chore.service";
+import { HouseService } from "./house.service";
 
 @Resolver(() => House)
 export class HouseResolver {
   constructor(
     private readonly _houseRepository: HouseRepository,
+    private readonly _houseService: HouseService,
     private readonly _userService: UserService,
-    private readonly _choreRepository: ChoreRepository,
     private readonly _choreService: ChoreService,
     private readonly _assignmentService: AssignmentService,
   ) {}
@@ -97,5 +97,11 @@ export class HouseResolver {
   @Mutation(() => House)
   async resumeSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: false });
+  }
+
+  @Mutation(() => Boolean)
+  async deleteHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
+    await this._houseService.destroy(user.houseId);
+    return true;
   }
 }
