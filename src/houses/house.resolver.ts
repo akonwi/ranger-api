@@ -100,7 +100,7 @@ export class HouseResolver {
   }
 
   @Mutation(() => Boolean)
-  async destroyHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
+  async deleteHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
     await this._houseService.destroy(user.houseId);
     return true;
   }
