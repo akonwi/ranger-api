@@ -1,4 +1,5 @@
 import * as firebase from "firebase-admin";
+import * as firebaseKey from "../firebase-account-key.json";
 import { UserService } from "./users/user.service";
 import { isNil } from "./utils";
 import { Injectable, Logger } from "@nestjs/common";
@@ -11,9 +12,7 @@ export class FirebaseService {
   constructor(private readonly _userService: UserService) {
     if (firebase.apps.length === 0) {
       firebase.initializeApp({
-        credential: firebase.credential.cert(
-          require("../firebase-account-key.json"),
-        ),
+        credential: firebase.credential.cert(firebaseKey as any),
       });
     }
   }
