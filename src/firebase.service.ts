@@ -1,4 +1,3 @@
-import { ConfigService } from "@nestjs/config";
 import * as firebase from "firebase-admin";
 import { UserService } from "./users/user.service";
 import { isNil } from "./utils";
@@ -9,14 +8,11 @@ import { Notification } from "firebase-admin/lib/messaging/messaging-api";
 export class FirebaseService {
   private readonly _logger = new Logger(FirebaseService.name);
 
-  constructor(
-    configService: ConfigService,
-    private readonly _userService: UserService,
-  ) {
+  constructor(private readonly _userService: UserService) {
     if (firebase.apps.length === 0) {
       firebase.initializeApp({
         credential: firebase.credential.cert(
-          JSON.parse(configService.getOrThrow("GOOGLE_SERVICE_ACCOUNT_KEY")),
+          require("../firebase-account-key.json"),
         ),
       });
     }
