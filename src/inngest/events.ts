@@ -69,10 +69,18 @@ type HouseDeleted = {
   };
 };
 
+type HouseMemberJoined = {
+  data: {
+    id: string;
+    memberId: string;
+  };
+};
+
 export type RangerEvents = {
   "chore.created": ChoreCreated;
   "chore.deleted": ChoreDeleted;
   "house.deleted": HouseDeleted;
+  "house.updated.member-joined": HouseMemberJoined;
   "assignments.reassigned": AssignmentsReassigned;
   "notifications.house.chores-due": {
     data: {
