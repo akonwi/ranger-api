@@ -3,6 +3,7 @@ import { House } from "./house.model";
 import { PrismaService } from "../prisma.service";
 import { Maybe, isNil } from "../utils";
 import { Prisma } from "@prisma/client";
+import { inngest } from "src/inngest/inngest.provider";
 
 @Injectable()
 export class HouseRepository {
@@ -44,6 +45,25 @@ export class HouseRepository {
     return this._prisma.house.findFirst({
       where: { memberIds: { has: userId } },
     });
+  }
+
+  async confirmInvite(userId: string, email: string): Promise<Maybe<House>> {
+    const invite = await this._prisma.invite.findUnique({ where: { email } });
+
+    if (invite) {
+      const [house] = await this._prisma.$transaction([
+        this._prisma.house.update({
+          where: { id: invite.houseId },
+          data: {
+            memberIds: { push: userId },
+          },
+        }),
+        this._prisma.invite.delete({ where: { email } }),
+      ]);
+
+      return house;
+    }
+    return null;
   }
 
   async get(id: string): Promise<Maybe<House>> {
