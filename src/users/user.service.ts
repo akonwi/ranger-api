@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { AppMetadata, User } from "./user.model";
 import {
@@ -7,10 +7,11 @@ import {
   ManagementClient,
 } from "auth0";
 import { ConfigService } from "@nestjs/config";
-import { Maybe } from "src/utils";
+import { Maybe, isNil } from "src/utils";
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   private readonly _auth0: ManagementClient;
 
   constructor(
@@ -66,6 +67,22 @@ export class UserService {
         app_metadata: input,
       },
     );
+  }
+
+  async saveDeviceToken(id: string, token: string) {
+    const user = await this.get(id);
+
+    if (isNil(user)) {
+      this.logger.warn(`Cannot update deviceToken. User ${id} not found`);
+      return;
+    }
+
+    const deviceTokens = new Set(user.appMetadata.deviceTokens);
+    deviceTokens.add(token);
+
+    await this.updateAppMetadata(id, {
+      deviceTokens: Array.from(deviceTokens),
+    });
   }
 
   private _mapUser(u: GetUsers200ResponseOneOfInner): User {

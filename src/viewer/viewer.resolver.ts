@@ -26,8 +26,11 @@ export class ViewerResolver {
   }
 
   @Mutation(() => Boolean)
-  async saveDeviceToken(@Args("token") token: string) {
-    // TODO
+  async saveDeviceToken(
+    @CurrentUser() user: UserContext,
+    @Args("token") token: string,
+  ): Promise<boolean> {
+    await this._userService.saveDeviceToken(user.id, token);
     return true;
   }
 }
