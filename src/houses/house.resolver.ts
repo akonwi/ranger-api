@@ -77,7 +77,10 @@ export class HouseResolver {
     return this._choreService.getActive({ houseId: house.id });
   }
 
-  @ResolveField("memberAssignments", () => [MemberAssignment])
+  @ResolveField(() => [MemberAssignment], {
+    name: "memberAssignments",
+    deprecationReason: "Use top-leve `memberAssignments` instead",
+  })
   async getMemberAssignments(
     @Parent() house: House,
   ): Promise<MemberAssignment[]> {
