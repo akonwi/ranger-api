@@ -92,14 +92,26 @@ export class HouseResolver {
     );
   }
 
-  @Mutation(() => House)
+  @Mutation(() => House, {
+    deprecationReason: "Use setHousePausedStatus instead",
+  })
   async pauseSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: true });
   }
 
-  @Mutation(() => House)
+  @Mutation(() => House, {
+    deprecationReason: "Use setHousePausedStatus instead",
+  })
   async resumeSchedule(@CurrentMember() user: MemberContext): Promise<House> {
     return this._houseRepository.update(user.houseId, { paused: false });
+  }
+
+  @Mutation(() => House)
+  async setHousePausedStatus(
+    @CurrentMember() user: MemberContext,
+    @Args({ name: "status", type: () => Boolean }) status: boolean,
+  ): Promise<House> {
+    return this._houseRepository.update(user.houseId, { paused: status });
   }
 
   @Mutation(() => Boolean)
