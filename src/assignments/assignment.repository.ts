@@ -9,6 +9,8 @@ import { Maybe } from "../utils";
 export class AssignmentRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
+  findMany = this._prisma.assignment.findMany;
+
   async list(
     options: Parameters<Prisma.AssignmentDelegate["findMany"]>[0],
   ): Promise<Assignment[]> {

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { inngest } from "./inngest.provider";
 import { AssignmentService } from "src/assignments/assignment.service";
 import { UserService } from "src/users/user.service";
@@ -9,13 +9,13 @@ import { groupBy, shuffle } from "lodash";
 import { ChoreService } from "src/chores/chore.service";
 import { isEmpty, isNil, isPresent, toRecord } from "src/utils";
 import { NonRetriableError } from "inngest";
+import { AssignmentRepository } from "src/assignments/assignment.repository";
 
 @Injectable()
 export class FunctionService {
-  private readonly _logger = new Logger(FunctionService.name);
-
   constructor(
     private readonly _assignmentService: AssignmentService,
+    private readonly _assignmentRepository: AssignmentRepository,
     private readonly _choreRepository: ChoreRepository,
     private readonly _choreService: ChoreService,
     private readonly _userService: UserService,
@@ -23,8 +23,65 @@ export class FunctionService {
     private readonly _houseRepository: HouseRepository,
   ) {}
 
+  private _reminderNotifications() {
+    const sendReminder = inngest.createFunction(
+      { id: "send-daily-reminder" },
+      {
+        event: "command.user.send-reminder",
+      },
+      async ({ event }) => {
+        const { userId, week } = event.data;
+        const user = await this._userService.get(userId);
+        if (isNil(user)) return;
+
+        const assignments = await this._assignmentRepository.findMany({
+          where: {
+            userId,
+            week,
+            completed: false,
+          },
+          select: { chore: { select: { name: true } } },
+        });
+        return this._firebaseService.sendNotification({
+          deviceTokens: user.appMetadata.deviceTokens,
+          notification: {
+            title: "You have incomplete chores",
+            body: assignments.map(a => a.chore.name).join("\n"),
+          },
+        });
+      },
+    );
+
+    const initiateDailyReminders = inngest.createFunction(
+      { id: "initiate-dailyReminders", name: "Initiate daily reminders" },
+      // everyday at 9am
+      { cron: "0 9 * * *" },
+      async ({ step }) => {
+        const houses = await step.run("find houses", () =>
+          this._houseRepository.findMany({
+            select: { id: true, memberIds: true, week: true },
+          }),
+        );
+
+        await Promise.all(
+          houses.flatMap(house =>
+            house.memberIds.map(userId =>
+              step.invoke("Send reminder notification", {
+                function: sendReminder,
+                data: { week: house.week, userId },
+              }),
+            ),
+          ),
+        );
+      },
+    );
+
+    return [sendReminder, initiateDailyReminders];
+  }
+
   getFunctions() {
     return [
+      ...this._reminderNotifications(),
       inngest.createFunction(
         {
           id: "assign-new-chore",

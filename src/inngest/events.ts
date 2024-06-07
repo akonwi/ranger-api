@@ -90,6 +90,9 @@ export type RangerEvents = {
   "command.house.assign-for-week": {
     data: { houseId: string };
   };
+  "command.user.send-reminder": {
+    data: { userId: string; week: number };
+  };
 
   // [RangerEvent.ASSIGN_HOUSE_CHORES_FOR_THE_WEEK]: AssignHouseChoresForWeek;
   // [RangerEvent.USER_JOINED_HOUSE]: UserNeedsAssignments;

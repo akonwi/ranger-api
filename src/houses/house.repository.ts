@@ -3,11 +3,12 @@ import { House } from "./house.model";
 import { PrismaService } from "../prisma.service";
 import { Maybe, isNil } from "../utils";
 import { Prisma } from "@prisma/client";
-import { inngest } from "src/inngest/inngest.provider";
 
 @Injectable()
 export class HouseRepository {
   constructor(private _prisma: PrismaService) {}
+
+  findMany = this._prisma.house.findMany;
 
   async find(id: string): Promise<Maybe<House>> {
     return this._prisma.house.findUnique({ where: { id } });
