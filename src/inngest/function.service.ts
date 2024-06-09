@@ -55,7 +55,7 @@ export class FunctionService {
     const initiateDailyReminders = inngest.createFunction(
       { id: "initiate-dailyReminders", name: "Initiate daily reminders" },
       // everyday at 9am
-      { cron: "0 9 * * *" },
+      { cron: "TZ=America/New_York 0 9 * * *" },
       async ({ step }) => {
         const houses = await step.run("find houses", () =>
           this._houseRepository.findMany({
