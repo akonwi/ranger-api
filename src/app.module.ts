@@ -18,11 +18,13 @@ import { ChoreService } from "./chores/chore.service";
 import { HouseModule } from "./houses/house.module";
 import { CommonModule } from "./common.module";
 import { HouseResolver } from "./houses/house.resolver";
+import { AssignmentModule } from "./assignments/assignment.module";
 
 @Module({
   imports: [
     CommonModule,
     HouseModule,
+    AssignmentModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
@@ -40,10 +42,6 @@ import { HouseResolver } from "./houses/house.resolver";
     FunctionService,
     UserService,
     UserResolver,
-    AssignmentRepository,
-    AssignmentService,
-    AssignmentResolver,
-    MemberAssignmentResolver,
     FirebaseService,
     {
       provide: APP_GUARD,
