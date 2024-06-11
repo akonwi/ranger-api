@@ -7,7 +7,7 @@ import {
   ManagementClient,
 } from "auth0";
 import { ConfigService } from "@nestjs/config";
-import { Maybe, isNil } from "src/utils";
+import { Maybe, isNil } from "../utils";
 
 @Injectable()
 export class UserService {

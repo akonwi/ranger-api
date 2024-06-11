@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Frequency } from "@prisma/client";
-import { Maybe } from "src/utils";
+import { Maybe } from "../utils";
 
 registerEnumType(Frequency, { name: "Frequency" });
 

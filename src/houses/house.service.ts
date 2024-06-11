@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { HouseRepository } from "./house.repository";
 import { inngest } from "../inngest/inngest.provider";
-import { Maybe } from "src/utils";
+import { Maybe } from "../../src/utils";
 import { House } from "./house.model";
-import { UserService } from "src/users/user.service";
+import { UserService } from "../../src/users/user.service";
 
 @Injectable()
 export class HouseService {

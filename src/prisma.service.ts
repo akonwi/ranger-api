@@ -5,9 +5,9 @@ import { PrismaClient } from "@prisma/client";
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(_configService: ConfigService) {
-    const notProduction = _configService.get("NODE_ENV") !== "production";
+    const isDev = _configService.get("NODE_ENV") === "development";
     super({
-      log: notProduction ? ["error", "warn", "query"] : ["error"],
+      log: isDev ? ["error", "warn", "query"] : ["error"],
     });
   }
 

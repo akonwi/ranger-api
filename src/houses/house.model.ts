@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql";
-import { Maybe } from "src/utils";
+import { Maybe } from "../utils";
 
 @ObjectType()
 export class House {

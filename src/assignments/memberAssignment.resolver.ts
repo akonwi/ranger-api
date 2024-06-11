@@ -1,11 +1,11 @@
 import { Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
 import { MemberAssignment } from "./memberAssignment.model";
-import { User } from "src/users/user.model";
-import { UserService } from "src/users/user.service";
-import { isNil } from "src/utils";
-import { CurrentMember, MemberContext } from "src/auth/currentUser.decorator";
+import { User } from "../users/user.model";
+import { UserService } from "../users/user.service";
+import { isNil } from "../utils";
+import { CurrentMember, MemberContext } from "../auth/currentUser.decorator";
 import { AssignmentService } from "./assignment.service";
-import { HouseService } from "src/houses/house.service";
+import { HouseService } from "../houses/house.service";
 
 @Resolver(() => MemberAssignment)
 export class MemberAssignmentResolver {

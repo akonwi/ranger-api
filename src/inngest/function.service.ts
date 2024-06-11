@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { inngest } from "./inngest.provider";
-import { AssignmentService } from "src/assignments/assignment.service";
-import { UserService } from "src/users/user.service";
-import { FirebaseService } from "src/firebase.service";
-import { ChoreRepository } from "src/chores/chore.repository";
-import { HouseRepository } from "src/houses/house.repository";
+import { AssignmentService } from "../assignments/assignment.service";
+import { UserService } from "../users/user.service";
+import { FirebaseService } from "../firebase.service";
+import { ChoreRepository } from "../chores/chore.repository";
+import { HouseRepository } from "../houses/house.repository";
 import { groupBy, shuffle } from "lodash";
-import { ChoreService } from "src/chores/chore.service";
-import { isEmpty, isNil, isPresent, toRecord } from "src/utils";
+import { ChoreService } from "../chores/chore.service";
+import { isEmpty, isNil, isPresent, toRecord } from "../utils";
 import { NonRetriableError } from "inngest";
-import { AssignmentRepository } from "src/assignments/assignment.repository";
+import { AssignmentRepository } from "../assignments/assignment.repository";
 
 @Injectable()
 export class FunctionService {
