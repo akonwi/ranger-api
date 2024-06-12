@@ -44,7 +44,7 @@ class LinkedList<T> {
           throw new Error("Cannot iterate over an empty list");
 
         return {
-          next() {
+          next: () => {
             const value = current!.value;
             current = current!.next === null ? this._head : current!.next;
             return { done: false, value };

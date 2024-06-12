@@ -66,7 +66,7 @@ describe("Assignment Strategies", () => {
           });
         });
 
-        it("assigns to alternates the chore between members", async () => {
+        it("alternates the chore between members", async () => {
           const [alice, bob] = ["alice", "bob"];
           const strategy = new RoundRobinStrategy(app.get(AssignmentService), {
             members: [alice, bob],
@@ -114,9 +114,9 @@ describe("Assignment Strategies", () => {
         });
       });
 
-      describe.skip("with 2 chores", () => {
+      describe("with 2 chores", () => {
         let cleanKitchen: Chore;
-        const chores: Chore[] = [];
+        let cleanBathroom: Chore;
 
         beforeAll(async () => {
           cleanKitchen = await app.get(ChoreRepository).create({
@@ -128,9 +128,9 @@ describe("Assignment Strategies", () => {
               connect: { id: house.id },
             },
           });
-          const cleanBathroom = await app.get(ChoreRepository).create({
+          cleanBathroom = await app.get(ChoreRepository).create({
             creatorId: house.memberIds[0],
-            name: "Clean the kitchen",
+            name: "Clean the bathroom",
             description: "",
             frequency: Frequency.WEEKLY,
             house: {
@@ -139,12 +139,12 @@ describe("Assignment Strategies", () => {
           });
         });
 
-        it("assigns to alternates the chore between members", async () => {
+        it("alternates the chore between members", async () => {
           const [alice, bob] = ["alice", "bob"];
           const strategy = new RoundRobinStrategy(app.get(AssignmentService), {
             members: [alice, bob],
             houseId: house.id,
-            chores: [cleanKitchen],
+            chores: [cleanKitchen, cleanBathroom],
           });
 
           const week0Result = await strategy.apply(0);
@@ -155,14 +155,26 @@ describe("Assignment Strategies", () => {
               week: 0,
             }),
           );
-          expect(week0Result[bob]).toHaveLength(0);
+          expect(week0Result[bob]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanBathroom.id,
+              isPenalty: false,
+              week: 0,
+            }),
+          );
 
           await app
             .get(AssignmentRepository)
             .createMany(Object.values(week0Result).flat());
 
           const week1Result = await strategy.apply(1);
-          expect(week1Result[alice]).toHaveLength(0);
+          expect(week1Result[alice]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanBathroom.id,
+              isPenalty: false,
+              week: 1,
+            }),
+          );
           expect(week1Result[bob]).toContainEqual(
             expect.objectContaining({
               choreId: cleanKitchen.id,
@@ -183,7 +195,13 @@ describe("Assignment Strategies", () => {
               week: 2,
             }),
           );
-          expect(week2Result[bob]).toHaveLength(0);
+          expect(week2Result[bob]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanBathroom.id,
+              isPenalty: false,
+              week: 2,
+            }),
+          );
         });
       });
     });
