@@ -113,6 +113,79 @@ describe("Assignment Strategies", () => {
           expect(week2Result[bob]).toHaveLength(0);
         });
       });
+
+      describe.skip("with 2 chores", () => {
+        let cleanKitchen: Chore;
+        const chores: Chore[] = [];
+
+        beforeAll(async () => {
+          cleanKitchen = await app.get(ChoreRepository).create({
+            creatorId: house.memberIds[0],
+            name: "Clean the kitchen",
+            description: "",
+            frequency: Frequency.WEEKLY,
+            house: {
+              connect: { id: house.id },
+            },
+          });
+          const cleanBathroom = await app.get(ChoreRepository).create({
+            creatorId: house.memberIds[0],
+            name: "Clean the kitchen",
+            description: "",
+            frequency: Frequency.WEEKLY,
+            house: {
+              connect: { id: house.id },
+            },
+          });
+        });
+
+        it("assigns to alternates the chore between members", async () => {
+          const [alice, bob] = ["alice", "bob"];
+          const strategy = new RoundRobinStrategy(app.get(AssignmentService), {
+            members: [alice, bob],
+            houseId: house.id,
+            chores: [cleanKitchen],
+          });
+
+          const week0Result = await strategy.apply(0);
+          expect(week0Result[alice]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanKitchen.id,
+              isPenalty: false,
+              week: 0,
+            }),
+          );
+          expect(week0Result[bob]).toHaveLength(0);
+
+          await app
+            .get(AssignmentRepository)
+            .createMany(Object.values(week0Result).flat());
+
+          const week1Result = await strategy.apply(1);
+          expect(week1Result[alice]).toHaveLength(0);
+          expect(week1Result[bob]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanKitchen.id,
+              isPenalty: false,
+              week: 1,
+            }),
+          );
+
+          await app
+            .get(AssignmentRepository)
+            .createMany(Object.values(week1Result).flat());
+
+          const week2Result = await strategy.apply(2);
+          expect(week2Result[alice]).toContainEqual(
+            expect.objectContaining({
+              choreId: cleanKitchen.id,
+              isPenalty: false,
+              week: 2,
+            }),
+          );
+          expect(week2Result[bob]).toHaveLength(0);
+        });
+      });
     });
   });
 });
