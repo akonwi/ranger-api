@@ -210,47 +210,12 @@ export class FunctionService {
           const lastWeek = house.week;
           const week = lastWeek + 1;
 
-          const previousAssignments = await step.run(
-            "Find previous assignments",
-            async () =>
-              this._assignmentService.findForWeek({
-                houseId,
-                week: lastWeek,
-              }),
+          await step.run("Assign penalties", async () =>
+            this._assignmentService.assignPenalties(houseId, week),
           );
-
-          await step.run("Assign penalties", async () => {
-            const incompleteAssignments = previousAssignments.filter(
-              a => !a.completed,
-            );
-            await this._assignmentService.createMany(
-              incompleteAssignments.map(a => ({
-                userId: a.userId,
-                choreId: a.choreId,
-                isPenalty: true,
-                houseId,
-                week,
-              })),
-            );
-          });
-
-          const chores = await step.run("Find chores for this week", () =>
-            this._choreService.findUnassignedChores({ houseId, week }),
+          await step.run("Assign designated chores", async () =>
+            this._assignmentService.assignDesignatedChores(houseId, week),
           );
-          await step.run("Assign designated chores", async () => {
-            const designatedChores = chores.filter(c =>
-              isPresent(c.designatedUserId),
-            );
-            return await this._assignmentService.createMany(
-              designatedChores.map(c => ({
-                houseId,
-                week,
-                choreId: c.id,
-                userId: c.designatedUserId!,
-                isPenalty: false,
-              })),
-            );
-          });
 
           const remainingChores = await step.run("Find remaining chores", () =>
             this._choreService.findUnassignedChores({ houseId, week }),

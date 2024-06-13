@@ -7,12 +7,14 @@ import { AssignmentRepository } from "./assignment.repository";
 import { Maybe, isEmpty, isNil, isPresent, toRecord } from "../utils";
 import { House } from "../houses/house.model";
 import { inngest } from "../inngest/inngest.provider";
+import { ChoreService } from "../chores/chore.service";
 
 @Injectable()
 export class AssignmentService {
   constructor(
     private readonly _assignmentRepository: AssignmentRepository,
     private readonly _choreRepository: ChoreRepository,
+    private readonly _choreService: ChoreService,
     private readonly _houseRepository: HouseRepository,
   ) {}
 
@@ -90,6 +92,47 @@ export class AssignmentService {
       userId: nextAssignee,
       week: house.week,
     });
+  }
+
+  async assignPenalties(houseId: string, week: number): Promise<Assignment[]> {
+    const previousAssignments = await this._assignmentRepository.findMany({
+      where: {
+        houseId,
+        week: week - 1,
+      },
+    });
+
+    const createAssignmentInputs = previousAssignments
+      .filter(a => a.completed !== true)
+      .map(a => ({
+        userId: a.userId,
+        choreId: a.choreId,
+        isPenalty: true,
+        houseId,
+        week,
+      }));
+
+    return this._assignmentRepository.createMany(createAssignmentInputs);
+  }
+
+  async assignDesignatedChores(
+    houseId: string,
+    week: number,
+  ): Promise<Assignment[]> {
+    const chores = await this._choreService.findUnassignedChores({
+      houseId,
+      week,
+    });
+    const designatedChores = chores.filter(c => isPresent(c.designatedUserId));
+    return this._assignmentRepository.createMany(
+      designatedChores.map(c => ({
+        houseId,
+        week,
+        choreId: c.id,
+        userId: c.designatedUserId!,
+        isPenalty: false,
+      })),
+    );
   }
 
   async createMany(inputs: Parameters<AssignmentRepository["createMany"]>[0]) {
