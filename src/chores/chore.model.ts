@@ -47,6 +47,8 @@ export class Chore {
 
   designatedUserId: string | null;
 
+  nextAssignee: Maybe<string>;
+
   @Field(() => Date, { nullable: true })
   deletedAt: Maybe<Date>;
 }

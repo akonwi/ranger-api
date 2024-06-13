@@ -45,6 +45,11 @@ export function isPresent<T>(thing: Maybe<T>): thing is T {
   return thing !== null && thing !== undefined;
 }
 
+/*
+ * Collections
+ */
+export function isEmpty(string: string): boolean;
+export function isEmpty<T>(list: T[]): boolean;
 export function isEmpty<T>(list: T[] | string): boolean {
   return list.length === 0;
 }
@@ -58,4 +63,23 @@ export function toRecord<Key extends string | number | symbol, T>(
 
 export function last<T>(list: T[]): Maybe<T> {
   return list[list.length - 1];
+}
+
+// a function that takes a list and then a predicate function. it returns two lists; one that satisfies the predicate and one that doesn't
+export function partition<T>(
+  list: T[],
+  predicate: (item: T) => boolean,
+): { matches: T[]; rest: T[] } {
+  const matches: T[] = [];
+  const rest: T[] = [];
+
+  for (const item of list) {
+    if (predicate(item)) {
+      matches.push(item);
+    } else {
+      rest.push(item);
+    }
+  }
+
+  return { matches, rest };
 }

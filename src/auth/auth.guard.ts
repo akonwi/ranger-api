@@ -10,10 +10,10 @@ import { Reflector } from "@nestjs/core";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { Request } from "express";
 import * as jose from "jose";
-import { HouseRepository } from "src/houses/house.repository";
+import { HouseRepository } from "../houses/house.repository";
 import { IS_PUBLIC_KEY } from "./public.decorator";
 import { UserContext } from "./currentUser.decorator";
-import { Maybe, isNil } from "src/utils";
+import { Maybe, isNil } from "../utils";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

@@ -1,10 +1,10 @@
 import { Query, Resolver, ResolveField, Mutation, Args } from "@nestjs/graphql";
 import { Viewer } from "./viewer.model";
-import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
-import { UserService } from "src/users/user.service";
-import { House } from "src/houses/house.model";
-import { Maybe } from "src/utils";
-import { HouseService } from "src/houses/house.service";
+import { CurrentUser, UserContext } from "../auth/currentUser.decorator";
+import { UserService } from "../users/user.service";
+import { House } from "../houses/house.model";
+import { Maybe } from "../utils";
+import { HouseService } from "../houses/house.service";
 
 @Resolver(() => Viewer)
 export class ViewerResolver {

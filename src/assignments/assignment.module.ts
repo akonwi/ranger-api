@@ -7,11 +7,13 @@ import { ChoreRepository } from "../chores/chore.repository";
 import { AssignmentRepository } from "./assignment.repository";
 import { UserService } from "../users/user.service";
 import { MemberAssignmentResolver } from "./memberAssignment.resolver";
+import { ChoreService } from "../chores/chore.service";
 
 @Module({
   imports: [CommonModule, HouseModule],
   providers: [
     ChoreRepository,
+    ChoreService,
     AssignmentRepository,
     AssignmentService,
     AssignmentResolver,

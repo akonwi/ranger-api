@@ -5,9 +5,8 @@ import { UserService } from "../users/user.service";
 import { FirebaseService } from "../firebase.service";
 import { ChoreRepository } from "../chores/chore.repository";
 import { HouseRepository } from "../houses/house.repository";
-import { groupBy, shuffle } from "lodash";
-import { ChoreService } from "../chores/chore.service";
-import { isEmpty, isNil, isPresent, toRecord } from "../utils";
+import { groupBy } from "lodash";
+import { isEmpty, isNil } from "../utils";
 import { NonRetriableError } from "inngest";
 import { AssignmentRepository } from "../assignments/assignment.repository";
 
@@ -17,7 +16,6 @@ export class FunctionService {
     private readonly _assignmentService: AssignmentService,
     private readonly _assignmentRepository: AssignmentRepository,
     private readonly _choreRepository: ChoreRepository,
-    private readonly _choreService: ChoreService,
     private readonly _userService: UserService,
     private readonly _firebaseService: FirebaseService,
     private readonly _houseRepository: HouseRepository,
@@ -89,9 +87,9 @@ export class FunctionService {
         },
         { event: "chore.created" },
         async ({ event, step }) => {
-          await step.run("assign chore", () =>
-            this._assignmentService.assignChore(event.data.id),
-          );
+          // await step.run("assign chore", () =>
+          //   this._assignmentService.assignChore(event.data.id),
+          // );
         },
       ),
       inngest.createFunction(
@@ -217,47 +215,9 @@ export class FunctionService {
             this._assignmentService.assignDesignatedChores(houseId, week),
           );
 
-          const remainingChores = await step.run("Find remaining chores", () =>
-            this._choreService.findUnassignedChores({ houseId, week }),
+          await step.run("Assign remaining chores", async () =>
+            this._assignmentService.assignChores(houseId, week),
           );
-
-          await step.run("Assign remaining chores", async () => {
-            for (const chore of remainingChores) {
-              const currentAssignments =
-                await this._assignmentService.findForWeek({
-                  houseId,
-                  week,
-                  isPenalty: false,
-                  chore: { designatedUserId: null },
-                });
-              const lastAssignment =
-                await this._assignmentService.findLatestForChore({
-                  choreId: chore.id,
-                  houseId,
-                });
-              const idsToCount = toRecord(
-                house.memberIds,
-                id => currentAssignments.filter(a => a.userId === id).length,
-              );
-
-              let assignee = this._assignmentService.getNextAssignee({
-                choreId: chore.id,
-                skip: lastAssignment?.userId,
-                idsToCount,
-              });
-              if (isNil(assignee)) assignee = shuffle(house.memberIds)[0];
-
-              await this._assignmentService.createMany([
-                {
-                  houseId,
-                  week,
-                  choreId: chore.id,
-                  userId: assignee,
-                  isPenalty: false,
-                },
-              ]);
-            }
-          });
 
           await step.run("Update week for house", () =>
             this._houseRepository.update(houseId, {

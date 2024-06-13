@@ -1,6 +1,6 @@
 import { Parent, ResolveField, Resolver } from "@nestjs/graphql";
 import { User } from "./user.model";
-import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
+import { CurrentUser, UserContext } from "../auth/currentUser.decorator";
 
 @Resolver(() => User)
 export class UserResolver {

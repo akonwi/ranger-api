@@ -13,12 +13,12 @@ import {
 import { Frequency } from "@prisma/client";
 import { Cadence, Chore, DayValue } from "./chore.model";
 import { ChoreRepository } from "./chore.repository";
-import { CurrentMember, MemberContext } from "src/auth/currentUser.decorator";
-import { Maybe, isNil, isOK, isPresent, last } from "src/utils";
-import { User } from "src/users/user.model";
-import { UserService } from "src/users/user.service";
-import { PaginatedAssignmentHistory } from "src/assignments/assignment.model";
-import { AssignmentService } from "src/assignments/assignment.service";
+import { CurrentMember, MemberContext } from "../auth/currentUser.decorator";
+import { Maybe, isNil, isOK, isPresent, last } from "../utils";
+import { User } from "../users/user.model";
+import { UserService } from "../users/user.service";
+import { PaginatedAssignmentHistory } from "../assignments/assignment.model";
+import { AssignmentService } from "../assignments/assignment.service";
 import { ChoreService } from "./chore.service";
 import { GraphQLError } from "graphql";
 
