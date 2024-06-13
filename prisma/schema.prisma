@@ -41,6 +41,7 @@ model Chore {
   designatedUserId String?
   isArchived       Boolean      @default(false)
   deletedAt        DateTime?
+  nextAssignee     String?
 
   @@index([id, houseId])
   @@index([houseId])
