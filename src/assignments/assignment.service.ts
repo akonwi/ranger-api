@@ -44,11 +44,44 @@ export class AssignmentService {
     toUserId: string;
     ids: string[];
   }): Promise<Assignment[]> {
-    const assignments = await Promise.all(
-      input.ids.map(async id =>
-        this._assignmentRepository.update(id, { userId: input.toUserId }),
+    let assignments = await this._assignmentRepository.findMany({
+      where: {
+        id: { in: input.ids },
+      },
+      include: { chore: true },
+    });
+    if (isEmpty(assignments)) return [];
+
+    const transaction = await this._prisma.$transaction([
+      ...assignments.map(a =>
+        this._prisma.assignment.update({
+          where: { id: a.id },
+          data: {
+            userId: input.toUserId,
+            isReassigned: true,
+          },
+        }),
       ),
-    );
+      ...assignments
+        .filter(a => {
+          /*
+           * if this is the first time it's being reassigned,
+           * nextAssignee needs to be come the fromUser
+           */
+          if (!a.isReassigned) return true;
+          // if this is another reassignment, and toUser is already next, swap with fromUser
+          if (a.chore.nextAssignee === input.toUserId) return true;
+          // if assigning again to anyone else, don't change nextAssignee
+          return false;
+        })
+        .map(a =>
+          this._prisma.chore.update({
+            where: { id: a.choreId },
+            data: { nextAssignee: input.fromUserId },
+          }),
+        ),
+    ]);
+
     inngest.send({
       name: "assignments.reassigned",
       data: {
@@ -57,7 +90,7 @@ export class AssignmentService {
         assignmentIds: input.ids,
       },
     });
-    return assignments;
+    return transaction.slice(0, assignments.length) as Assignment[];
   }
 
   async assignChore(choreId: string): Promise<Assignment> {

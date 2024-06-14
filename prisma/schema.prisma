@@ -48,17 +48,18 @@ model Chore {
 }
 
 model Assignment {
-  id        String   @id @default(cuid())
-  userId    String
-  houseId   String
-  house     House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
-  chore     Chore    @relation(fields: [choreId], references: [id], onDelete: Cascade)
-  choreId   String
-  week      Int
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  isPenalty Boolean  @default(false)
+  id           String   @id @default(cuid())
+  userId       String
+  houseId      String
+  house        House    @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  chore        Chore    @relation(fields: [choreId], references: [id], onDelete: Cascade)
+  choreId      String
+  week         Int
+  completed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  isPenalty    Boolean  @default(false)
+  isReassigned Boolean  @default(false)
 
   @@unique([houseId, choreId, week])
   @@index([houseId, week])

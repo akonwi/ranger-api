@@ -11,6 +11,8 @@ export class AssignmentRepository {
 
   findMany = this._prisma.assignment.findMany;
 
+  updateMany = this._prisma.assignment.updateMany;
+
   async list(
     options: Parameters<Prisma.AssignmentDelegate["findMany"]>[0],
   ): Promise<Assignment[]> {
