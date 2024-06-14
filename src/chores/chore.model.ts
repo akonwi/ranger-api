@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
 import { Frequency } from "@prisma/client";
-import { Maybe } from "src/utils";
+import { Maybe } from "../utils";
 
 registerEnumType(Frequency, { name: "Frequency" });
 
@@ -46,6 +46,8 @@ export class Chore {
   day: number | null;
 
   designatedUserId: string | null;
+
+  nextAssignee: Maybe<string>;
 
   @Field(() => Date, { nullable: true })
   deletedAt: Maybe<Date>;

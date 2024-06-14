@@ -7,13 +7,19 @@ import { AssignmentRepository } from "./assignment.repository";
 import { Maybe, isEmpty, isNil, isPresent, toRecord } from "../utils";
 import { House } from "../houses/house.model";
 import { inngest } from "../inngest/inngest.provider";
+import { ChoreService } from "../chores/chore.service";
+import { CircularIterator, LinkedList } from "../utils/linkedList";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../prisma.service";
 
 @Injectable()
 export class AssignmentService {
   constructor(
     private readonly _assignmentRepository: AssignmentRepository,
     private readonly _choreRepository: ChoreRepository,
+    private readonly _choreService: ChoreService,
     private readonly _houseRepository: HouseRepository,
+    private readonly _prisma: PrismaService,
   ) {}
 
   async getPerMember(house: House): Promise<Record<string, Assignment[]>> {
@@ -38,11 +44,44 @@ export class AssignmentService {
     toUserId: string;
     ids: string[];
   }): Promise<Assignment[]> {
-    const assignments = await Promise.all(
-      input.ids.map(async id =>
-        this._assignmentRepository.update(id, { userId: input.toUserId }),
+    let assignments = await this._assignmentRepository.findMany({
+      where: {
+        id: { in: input.ids },
+      },
+      include: { chore: true },
+    });
+    if (isEmpty(assignments)) return [];
+
+    const transaction = await this._prisma.$transaction([
+      ...assignments.map(a =>
+        this._prisma.assignment.update({
+          where: { id: a.id },
+          data: {
+            userId: input.toUserId,
+            isReassigned: true,
+          },
+        }),
       ),
-    );
+      ...assignments
+        .filter(a => {
+          /*
+           * if this is the first time it's being reassigned,
+           * nextAssignee needs to be come the fromUser
+           */
+          if (!a.isReassigned) return true;
+          // if this is another reassignment, and toUser is already next, swap with fromUser
+          if (a.chore.nextAssignee === input.toUserId) return true;
+          // if assigning again to anyone else, don't change nextAssignee
+          return false;
+        })
+        .map(a =>
+          this._prisma.chore.update({
+            where: { id: a.choreId },
+            data: { nextAssignee: input.fromUserId },
+          }),
+        ),
+    ]);
+
     inngest.send({
       name: "assignments.reassigned",
       data: {
@@ -51,7 +90,7 @@ export class AssignmentService {
         assignmentIds: input.ids,
       },
     });
-    return assignments;
+    return transaction.slice(0, assignments.length) as Assignment[];
   }
 
   async assignChore(choreId: string): Promise<Assignment> {
@@ -90,6 +129,101 @@ export class AssignmentService {
       userId: nextAssignee,
       week: house.week,
     });
+  }
+
+  async assignPenalties(houseId: string, week: number): Promise<Assignment[]> {
+    const previousAssignments = await this._assignmentRepository.findMany({
+      where: {
+        houseId,
+        week: week - 1,
+      },
+    });
+
+    const createAssignmentInputs = previousAssignments
+      .filter(a => a.completed !== true)
+      .map(a => ({
+        userId: a.userId,
+        choreId: a.choreId,
+        isPenalty: true,
+        houseId,
+        week,
+      }));
+
+    return this._assignmentRepository.createMany(createAssignmentInputs);
+  }
+
+  async assignDesignatedChores(
+    houseId: string,
+    week: number,
+  ): Promise<Assignment[]> {
+    const chores = await this._choreService.findUnassignedChores({
+      houseId,
+      week,
+    });
+    const designatedChores = chores.filter(c => isPresent(c.designatedUserId));
+    return this._assignmentRepository.createMany(
+      designatedChores.map(c => ({
+        houseId,
+        week,
+        choreId: c.id,
+        userId: c.designatedUserId!,
+        isPenalty: false,
+      })),
+    );
+  }
+
+  async assignChores(houseId: string, week: number): Promise<Assignment[]> {
+    const house = await this._houseRepository.get(houseId);
+    if (isNil(house)) throw new Error("House not found");
+
+    const memberIterator = CircularIterator.of(
+      LinkedList.fromArray(house.memberIds),
+    );
+
+    const chores = await this._choreService.findUnassignedChores({
+      houseId,
+      week,
+    });
+
+    const assignmentInputs: Prisma.AssignmentCreateManyInput[] = [];
+    const choreInputs: Prisma.ChoreUpdateArgs[] = [];
+    for (const chore of chores) {
+      let assignee = chore.nextAssignee;
+
+      // if the next assignee isn't set, assign the next member in the list
+      if (assignee == null) {
+        const lastAssignment = await this.findLatestForChore({
+          choreId: chore.id,
+          houseId,
+        });
+        assignee =
+          lastAssignment == null
+            ? memberIterator.next()
+            : memberIterator.nextAfter(lastAssignment.userId);
+      }
+      if (assignee == null) throw new Error("No eligible assignees found");
+
+      assignmentInputs.push({
+        week,
+        houseId,
+        choreId: chore.id,
+        userId: assignee,
+        isPenalty: false,
+      });
+      choreInputs.push({
+        where: { id: chore.id },
+        data: { nextAssignee: memberIterator.peek() },
+      });
+    }
+
+    const results = await this._prisma.$transaction([
+      ...assignmentInputs.map(input =>
+        this._prisma.assignment.create({ data: input }),
+      ),
+      ...choreInputs.map(input => this._prisma.chore.update(input)),
+    ]);
+
+    return results.slice(0, assignmentInputs.length) as Assignment[];
   }
 
   async createMany(inputs: Parameters<AssignmentRepository["createMany"]>[0]) {

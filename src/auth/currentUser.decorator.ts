@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from "@nestjs/common";
 import { GqlExecutionContext } from "@nestjs/graphql";
-import { Maybe, NoNil } from "src/utils";
+import { Maybe, NoNil } from "../utils";
 
 export type UserContext = {
   id: string;

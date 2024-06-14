@@ -11,6 +11,8 @@ export class AssignmentRepository {
 
   findMany = this._prisma.assignment.findMany;
 
+  updateMany = this._prisma.assignment.updateMany;
+
   async list(
     options: Parameters<Prisma.AssignmentDelegate["findMany"]>[0],
   ): Promise<Assignment[]> {
@@ -26,7 +28,10 @@ export class AssignmentRepository {
   }
 
   async createMany(inputs: Prisma.AssignmentCreateManyInput[]) {
-    await this._prisma.assignment.createMany({ data: inputs });
+    // todo: update prisma to be able to use createManyAndReturn
+    return this._prisma.$transaction(
+      inputs.map(input => this._prisma.assignment.create({ data: input })),
+    );
   }
 
   async findLatestForChore(input: {

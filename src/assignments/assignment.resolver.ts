@@ -7,13 +7,13 @@ import {
   Resolver,
 } from "@nestjs/graphql";
 import { Assignment } from "./assignment.model";
-import { Chore } from "src/chores/chore.model";
-import { ChoreRepository } from "src/chores/chore.repository";
-import { UserService } from "src/users/user.service";
-import { User } from "src/users/user.model";
+import { Chore } from "../chores/chore.model";
+import { ChoreRepository } from "../chores/chore.repository";
+import { UserService } from "../users/user.service";
+import { User } from "../users/user.model";
 import { AssignmentService } from "./assignment.service";
-import { CurrentUser, UserContext } from "src/auth/currentUser.decorator";
-import { isNil } from "src/utils";
+import { CurrentUser, UserContext } from "../auth/currentUser.decorator";
+import { isNil } from "../utils";
 
 @Resolver(() => Assignment)
 export class AssignmentResolver {
