@@ -8,7 +8,7 @@ import { Maybe, isEmpty, isNil, isPresent, toRecord } from "../utils";
 import { House } from "../houses/house.model";
 import { inngest } from "../inngest/inngest.provider";
 import { ChoreService } from "../chores/chore.service";
-import { CircularIterator, LinkedList } from "../utils/linkedList";
+import { CircularLinkedList } from "../utils/circularLinkedList";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma.service";
 
@@ -176,9 +176,7 @@ export class AssignmentService {
     const house = await this._houseRepository.get(houseId);
     if (isNil(house)) throw new Error("House not found");
 
-    const memberIterator = CircularIterator.of(
-      LinkedList.fromArray(house.memberIds),
-    );
+    const list = CircularLinkedList.from(house.memberIds);
 
     const chores = await this._choreService.findUnassignedChores({
       houseId,
@@ -198,8 +196,8 @@ export class AssignmentService {
         });
         assignee =
           lastAssignment == null
-            ? memberIterator.next()
-            : memberIterator.nextAfter(lastAssignment.userId);
+            ? list.next()
+            : list.nextAfter(lastAssignment.userId);
       }
       if (assignee == null) throw new Error("No eligible assignees found");
 
@@ -212,7 +210,7 @@ export class AssignmentService {
       });
       choreInputs.push({
         where: { id: chore.id },
-        data: { nextAssignee: memberIterator.peek() },
+        data: { nextAssignee: list.peek() },
       });
     }
 
