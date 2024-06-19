@@ -68,16 +68,17 @@ model Assignment {
 }
 
 model House {
-  id          String       @id @default(cuid())
-  name        String
-  creatorId   String
-  adminId     String
-  memberIds   String[]
-  chores      Chore[]
-  assignments Assignment[]
-  invites     Invite[]
-  week        Int          @default(0)
-  paused      Boolean?     @default(false)
+  id                     String       @id @default(cuid())
+  name                   String
+  creatorId              String
+  adminId                String
+  memberIds              String[]
+  chores                 Chore[]
+  assignments            Assignment[]
+  invites                Invite[]
+  week                   Int          @default(0)
+  paused                 Boolean?     @default(false)
+  manualPenaltiesEnabled Boolean?     @default(false)
 }
 
 model Invite {

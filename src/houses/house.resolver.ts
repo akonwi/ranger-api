@@ -114,6 +114,16 @@ export class HouseResolver {
     return this._houseRepository.update(user.houseId, { paused: status });
   }
 
+  @Mutation(() => House)
+  async setManualPenaltiesEnabled(
+    @CurrentMember() user: MemberContext,
+    @Args({ name: "enabled", type: () => Boolean }) enabled: boolean,
+  ): Promise<House> {
+    return this._houseRepository.update(user.houseId, {
+      manualPenaltiesEnabled: enabled,
+    });
+  }
+
   @Mutation(() => Boolean)
   async deleteHouse(@CurrentMember() user: MemberContext): Promise<boolean> {
     await this._houseService.destroy(user.houseId);

@@ -16,4 +16,7 @@ export class House {
 
   @Field(() => Boolean, { nullable: false })
   paused: Maybe<boolean>;
+
+  @Field(() => Boolean, { nullable: false })
+  manualPenaltiesEnabled: Maybe<boolean>;
 }
