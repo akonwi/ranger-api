@@ -153,7 +153,7 @@ export class FunctionService {
                   const user = await this._userService.get(userId);
                   if (isNil(user)) return;
 
-                  const choreNames = await this._choreRepository.findMany({
+                  const chores = await this._choreRepository.findMany({
                     where: {
                       id: { in: assignments.map(a => a.choreId) },
                     },
@@ -163,7 +163,7 @@ export class FunctionService {
                     deviceTokens: user.appMetadata.deviceTokens,
                     notification: {
                       title: "Chores due today",
-                      body: choreNames.join("\n"),
+                      body: chores.map(c => c.name).join("\n"),
                     },
                   });
                 }),
