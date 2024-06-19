@@ -33,7 +33,7 @@ export class HouseService {
   }
 
   async destroy(id: string): Promise<void> {
-    const house = await this._houseRepository.find(id);
+    const house = await this._houseRepository.find({ where: { id } });
     if (!house) return;
 
     await this._houseRepository.destroy(id);

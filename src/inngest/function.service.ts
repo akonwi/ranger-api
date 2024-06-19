@@ -21,6 +21,28 @@ export class FunctionService {
     private readonly _houseRepository: HouseRepository,
   ) {}
 
+  private async _sendNotification(input: {
+    userId: string;
+    notification: {
+      title: string;
+      body: string;
+    };
+  }) {
+    const user = await this._userService.get(input.userId);
+    if (isNil(user)) return;
+
+    const deviceTokens = user.appMetadata.deviceTokens;
+
+    if (isNil(deviceTokens) || isEmpty(deviceTokens)) return;
+
+    // TODO: error handling + delete invalid device tokens
+    await this._firebaseService.sendNotification({
+      deviceTokens,
+      notification: input.notification,
+    });
+    return;
+  }
+
   private _reminderNotifications() {
     const sendReminder = inngest.createFunction(
       { id: "send-daily-reminder" },
@@ -201,14 +223,16 @@ export class FunctionService {
           const { houseId } = event.data;
 
           const house = await step.run("Get house", () =>
-            this._houseRepository.get(houseId),
+            this._houseRepository.find({
+              where: { id: houseId },
+            }),
           );
           if (isNil(house)) throw new NonRetriableError("House not found");
 
           const lastWeek = house.week;
           const week = lastWeek + 1;
 
-          await step.run("Assign penalties", async () =>
+          const penalties = await step.run("Assign penalties", async () =>
             this._assignmentService.assignPenalties(houseId, week),
           );
           await step.run("Assign designated chores", async () =>
@@ -224,6 +248,32 @@ export class FunctionService {
               week,
             }),
           );
+
+          if (house.manualPenaltiesEnabled && penalties.length > 0) {
+            await step.run(
+              "Send notification for possible additional penalty",
+              async () => {
+                const usersWithPenalties = new Set(
+                  penalties.map(p => p.userId),
+                );
+                const winnerId = house.memberIds.find(
+                  userId => !usersWithPenalties.has(userId),
+                );
+                if (winnerId == null) return;
+
+                const loser = await this._userService.get(penalties[0].userId);
+                if (isNil(loser)) throw new NonRetriableError("User not found");
+
+                await this._sendNotification({
+                  userId: winnerId,
+                  notification: {
+                    title: "You can assign a penalty",
+                    body: `${loser.nickname} did not complete their chores last week.`,
+                  },
+                });
+              },
+            );
+          }
         },
       ),
       inngest.createFunction(

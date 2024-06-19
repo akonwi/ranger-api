@@ -10,9 +10,7 @@ export class HouseRepository {
 
   findMany = this._prisma.house.findMany;
 
-  async find(id: string): Promise<Maybe<House>> {
-    return this._prisma.house.findUnique({ where: { id } });
-  }
+  find = this._prisma.house.findUnique;
 
   async list(
     where: Prisma.HouseWhereInput,
