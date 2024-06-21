@@ -17,10 +17,7 @@ import {
   MemberContext,
   UserContext,
 } from "../auth/currentUser.decorator";
-import { Chore } from "../chores/chore.model";
-import { MemberAssignment } from "../assignments/memberAssignment.model";
 import { AssignmentService } from "../assignments/assignment.service";
-import { ChoreService } from "../chores/chore.service";
 import { HouseService } from "./house.service";
 
 @Resolver(() => House)
@@ -29,7 +26,6 @@ export class HouseResolver {
     private readonly _houseRepository: HouseRepository,
     private readonly _houseService: HouseService,
     private readonly _userService: UserService,
-    private readonly _choreService: ChoreService,
     private readonly _assignmentService: AssignmentService,
   ) {}
 
@@ -67,43 +63,9 @@ export class HouseResolver {
     return this._houseRepository.getForUser(user.id);
   }
 
-  @ResolveField("chores")
+  @ResolveField("paused")
   async paused(@Parent() house: House): Promise<boolean> {
     return house.paused === true;
-  }
-
-  @ResolveField("chores", () => [Chore])
-  async getChores(@Parent() house: House): Promise<Chore[]> {
-    return this._choreService.getActive({ houseId: house.id });
-  }
-
-  @ResolveField(() => [MemberAssignment], {
-    name: "memberAssignments",
-    deprecationReason: "Use top-leve `memberAssignments` instead",
-  })
-  async getMemberAssignments(
-    @Parent() house: House,
-  ): Promise<MemberAssignment[]> {
-    const assignmentsPerMember =
-      await this._assignmentService.getPerMember(house);
-
-    return Object.entries(assignmentsPerMember).map(
-      ([userId, assignments]) => ({ userId, assignments }),
-    );
-  }
-
-  @Mutation(() => House, {
-    deprecationReason: "Use setHousePausedStatus instead",
-  })
-  async pauseSchedule(@CurrentMember() user: MemberContext): Promise<House> {
-    return this._houseRepository.update(user.houseId, { paused: true });
-  }
-
-  @Mutation(() => House, {
-    deprecationReason: "Use setHousePausedStatus instead",
-  })
-  async resumeSchedule(@CurrentMember() user: MemberContext): Promise<House> {
-    return this._houseRepository.update(user.houseId, { paused: false });
   }
 
   @Mutation(() => House)
