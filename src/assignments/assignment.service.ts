@@ -43,54 +43,55 @@ export class AssignmentService {
     fromUserId: string;
     toUserId: string;
     ids: string[];
+    asPenalty?: boolean;
   }): Promise<Assignment[]> {
-    let assignments = await this._assignmentRepository.findMany({
-      where: {
-        id: { in: input.ids },
-      },
+    const [id] = input.ids;
+    const assignment = await this._assignmentRepository.find({
+      where: { id },
       include: { chore: true },
     });
-    if (isEmpty(assignments)) return [];
+    if (isNil(assignment)) throw new Error("Assignment not found: " + id);
+    // no-op if the fromUser is not the current assignee
+    if (assignment.userId !== input.fromUserId) return [assignment];
 
-    const transaction = await this._prisma.$transaction([
-      ...assignments.map(a =>
-        this._prisma.assignment.update({
-          where: { id: a.id },
-          data: {
-            userId: input.toUserId,
-            isReassigned: true,
-          },
-        }),
-      ),
-      ...assignments
-        .filter(a => {
-          /*
-           * if this is the first time it's being reassigned,
-           * nextAssignee needs to be come the fromUser
-           */
-          if (!a.isReassigned) return true;
-          // if this is another reassignment, and toUser is already next, swap with fromUser
-          if (a.chore.nextAssignee === input.toUserId) return true;
-          // if assigning again to anyone else, don't change nextAssignee
-          return false;
-        })
-        .map(a =>
-          this._prisma.chore.update({
-            where: { id: a.choreId },
-            data: { nextAssignee: input.fromUserId },
-          }),
-        ),
-    ]);
+    const updated = await this._prisma.$transaction(async tx => {
+      const updated = await tx.assignment.update({
+        where: { id: assignment!.id },
+        data: {
+          userId: input.toUserId,
+          isReassigned: input.asPenalty ? false : true,
+          isPenalty: input.asPenalty,
+        },
+        include: { chore: true },
+      });
+
+      /*
+       * if this is the first time it's being reassigned,
+       * nextAssignee needs to become the fromUser
+       */
+      if (!assignment!.isReassigned || input.asPenalty) return updated;
+
+      // if this is another reassignment, and toUser is already next, swap with fromUser
+      if (assignment!.chore.nextAssignee === input.toUserId) {
+        await this._prisma.chore.update({
+          where: { id: assignment!.choreId },
+          data: { nextAssignee: input.fromUserId },
+        });
+      }
+      // if assigning again to anyone else, don't change nextAssignee
+      return updated;
+    });
 
     inngest.send({
       name: "assignments.reassigned",
       data: {
         toUserId: input.toUserId,
         fromUserId: input.fromUserId,
-        assignmentIds: input.ids,
+        assignmentIds: [id],
       },
     });
-    return transaction.slice(0, assignments.length) as Assignment[];
+
+    return [updated];
   }
 
   async assignChore(choreId: string): Promise<Assignment> {

@@ -9,8 +9,8 @@ import { Maybe } from "../utils";
 export class AssignmentRepository {
   constructor(private readonly _prisma: PrismaService) {}
 
+  find = this._prisma.assignment.findUnique;
   findMany = this._prisma.assignment.findMany;
-
   updateMany = this._prisma.assignment.updateMany;
 
   async list(

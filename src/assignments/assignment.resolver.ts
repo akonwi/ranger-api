@@ -47,14 +47,17 @@ export class AssignmentResolver {
 
   @Mutation(() => [Assignment])
   async reassignAssignment(
+    @CurrentUser() currentUser: UserContext,
     @Args({ name: "id", type: () => ID }) id: string,
     @Args({ name: "userId", type: () => ID }) userId: string,
-    @CurrentUser() currentUser: UserContext,
+    @Args({ name: "asPenalty", type: () => Boolean, nullable: true })
+    asPenalty = false,
   ): Promise<Assignment[]> {
     return this._assignmentService.reassign({
       fromUserId: currentUser.id,
       toUserId: userId,
       ids: [id],
+      asPenalty,
     });
   }
 }
