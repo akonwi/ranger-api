@@ -57,4 +57,19 @@ export class AssignmentResolver {
       ids: [id],
     });
   }
+
+  @Mutation(() => Assignment)
+  async givePenalty(
+    @Args({ name: "id", type: () => ID }) id: string,
+    @Args({ name: "userId", type: () => ID }) userId: string,
+    @CurrentUser() currentUser: UserContext,
+  ): Promise<Assignment> {
+    const [assignment] = await this._assignmentService.reassign({
+      fromUserId: currentUser.id,
+      toUserId: userId,
+      ids: [id],
+      isPenalizing: true,
+    });
+    return assignment;
+  }
 }
