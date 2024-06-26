@@ -43,22 +43,24 @@ export class AssignmentService {
     fromUserId: string;
     toUserId: string;
     ids: string[];
-    isPenalizing?: boolean;
+    asPenalty?: boolean;
   }): Promise<Assignment[]> {
     const [id] = input.ids;
     const assignment = await this._assignmentRepository.find({
       where: { id },
       include: { chore: true },
     });
-    if (isNil(assignment)) return [];
+    if (isNil(assignment)) throw new Error("Assignment not found: " + id);
+    // no-op if the fromUser is not the current assignee
+    if (assignment.userId !== input.fromUserId) return [assignment];
 
     const updated = await this._prisma.$transaction(async tx => {
       const updated = await tx.assignment.update({
         where: { id: assignment!.id },
         data: {
           userId: input.toUserId,
-          isReassigned: input.isPenalizing ? false : true,
-          isPenalty: input.isPenalizing,
+          isReassigned: input.asPenalty ? false : true,
+          isPenalty: input.asPenalty,
         },
         include: { chore: true },
       });
@@ -67,7 +69,7 @@ export class AssignmentService {
        * if this is the first time it's being reassigned,
        * nextAssignee needs to become the fromUser
        */
-      if (!assignment!.isReassigned || input.isPenalizing) return updated;
+      if (!assignment!.isReassigned || input.asPenalty) return updated;
 
       // if this is another reassignment, and toUser is already next, swap with fromUser
       if (assignment!.chore.nextAssignee === input.toUserId) {
