@@ -85,6 +85,7 @@ export type RangerEvents = {
   "notifications.house.chores-due": {
     data: {
       houseId: string;
+      week: number;
     };
   };
   "command.house.assign-for-week": {

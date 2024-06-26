@@ -243,10 +243,14 @@ export class AssignmentService {
     return this._assignmentRepository.findLatestForChore(input);
   }
 
-  async findDueToday(houseId: string): Promise<Assignment[]> {
+  async findDueToday(input: { houseId: string; week: number }): Promise<
+    Assignment[]
+  > {
+    const { houseId, week } = input;
     return this._assignmentRepository.list({
       where: {
         houseId,
+        week,
         completed: false,
         chore: { day: new Date().getDay() },
       },

@@ -163,7 +163,10 @@ export class FunctionService {
             "Find assignments",
             async () => {
               const assignmentsDueToday =
-                await this._assignmentService.findDueToday(event.data.houseId);
+                await this._assignmentService.findDueToday({
+                  houseId: event.data.houseId,
+                  week: event.data.week,
+                });
               return groupBy(assignmentsDueToday, "userId");
             },
           );
@@ -201,14 +204,16 @@ export class FunctionService {
         },
         { cron: "TZ=America/New_York 0 8 * * *" },
         async ({ step }) => {
-          const houseIds = await step.run("Get house ids", async () =>
-            this._houseRepository.list({}, { id: true }),
+          const houses = await step.run("Get house ids", async () =>
+            this._houseRepository.findMany({
+              select: { id: true, week: true },
+            }),
           );
           await step.sendEvent(
             "send-per-house-events",
-            houseIds.map(({ id }) => ({
+            houses.map(({ id, week }) => ({
               name: "notifications.house.chores-due",
-              data: { houseId: id },
+              data: { houseId: id, week },
             })),
           );
         },
