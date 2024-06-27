@@ -142,13 +142,20 @@ export class FunctionService {
 
           if (isNil(deviceTokens) || isEmpty(deviceTokens)) return;
 
+          let title: string;
+          if (event.data.asPenalty) {
+            title = `You have a penalty for unfinished chores`;
+          } else {
+            title = `${fromName} gave you ${
+              choreNames.length === 1 ? "a chore" : "chores"
+            }`;
+          }
+
           await step.run("Send notification", () =>
             this._firebaseService.sendNotification({
               deviceTokens,
               notification: {
-                title: `${fromName} gave you ${
-                  choreNames.length === 1 ? "a chore" : "chores"
-                }`,
+                title,
                 body: choreNames.join("\n"),
               },
             }),

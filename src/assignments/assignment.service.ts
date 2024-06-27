@@ -88,6 +88,7 @@ export class AssignmentService {
         toUserId: input.toUserId,
         fromUserId: input.fromUserId,
         assignmentIds: [id],
+        asPenalty: input.asPenalty ?? false,
       },
     });
 

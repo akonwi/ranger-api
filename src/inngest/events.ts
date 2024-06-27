@@ -29,36 +29,12 @@ type ChoreDeleted = {
   };
 };
 
-type AssignHouseChoresForWeek = {
-  data: {
-    houseId: string;
-  };
-};
-
-type UserNeedsAssignments = {
-  data: {
-    id: string;
-  };
-};
-
-type SendPendingTasksNotification = {
-  data: {
-    userId: string;
-  };
-};
-
-type SendChoresDueNotification = {
-  data: {
-    userId: string;
-    choreNames: string[];
-  };
-};
-
 type AssignmentsReassigned = {
   data: {
     assignmentIds: string[];
     fromUserId: string;
     toUserId: string;
+    asPenalty: boolean;
   };
 };
 
@@ -94,16 +70,4 @@ export type RangerEvents = {
   "command.user.send-reminder": {
     data: { userId: string; week: number };
   };
-
-  // [RangerEvent.ASSIGN_HOUSE_CHORES_FOR_THE_WEEK]: AssignHouseChoresForWeek;
-  // [RangerEvent.USER_JOINED_HOUSE]: UserNeedsAssignments;
-  // [RangerEvent.SEND_PENDING_TASKS_NOTIFICATION]: SendPendingTasksNotification;
-  // [RangerEvent.MANUALLY_NOTIFY_OF_PENDING_TASKS]: {
-  //   // biome-ignore lint/complexity/noBannedTypes: trying to express empty
-  //   data: {};
-  // };
-  // [RangerEvent.SEND_CHORES_DUE_NOTIFICATION]: SendChoresDueNotification;
-  // [RangerEvent.ASSIGNMENTS_MOVED]: AssignmentsMoved;
-  // // biome-ignore lint/complexity/noBannedTypes: trying to express empty
-  // [RangerEvent.MANUALLY_NOTIFY_OF_TODAY_TASKS]: { data: {} };
 };
