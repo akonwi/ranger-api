@@ -290,8 +290,8 @@ export class FunctionService {
       ),
       inngest.createFunction(
         { id: "weekly-assign-chores", name: "Weekly: Assign Chores" },
-        // every sunday at 8pm
-        { cron: "TZ=America/New_York 00 20 * * 0" },
+        // every sunday at 11pm
+        { cron: "TZ=America/New_York 00 23 * * 0" },
         async ({ step }) => {
           const houseIds = await step.run("Get all houses", () => {
             return this._houseRepository.list(
