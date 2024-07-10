@@ -28,10 +28,9 @@ export class AssignmentRepository {
   }
 
   async createMany(inputs: Prisma.AssignmentCreateManyInput[]) {
-    // todo: update prisma to be able to use createManyAndReturn
-    return this._prisma.$transaction(
-      inputs.map(input => this._prisma.assignment.create({ data: input })),
-    );
+    return this._prisma.assignment.createManyAndReturn({
+      data: inputs,
+    });
   }
 
   async findLatestForChore(input: {
