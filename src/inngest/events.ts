@@ -1,19 +1,10 @@
-"chore.created";
-"chore.updated";
-"chore.archived";
-"assignment.created";
-"assignment.updated.completed";
-"assignment.updated.uncompleted";
-"assignment.updated.assigned";
-"assignment.updated.reassigned";
-
 type Model = "chore" | "assignment";
 type EventDetail = string;
+
 export type RangerEvent = `${Model}.${
   | "created"
   | "updated"
   | "archived"}${EventDetail extends never ? "" : `.${EventDetail}`}`;
-// export const rangerEvent =
 
 type ChoreCreated = {
   data: {
