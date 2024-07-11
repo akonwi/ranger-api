@@ -35,11 +35,14 @@ export class FunctionService {
 
     if (isNil(deviceTokens) || isEmpty(deviceTokens)) return;
 
-    // TODO: error handling + delete invalid device tokens
-    await this._firebaseService.sendNotification({
+    const { invalidTokens } = await this._firebaseService.sendNotification({
       deviceTokens,
       notification: input.notification,
     });
+
+    if (!isEmpty(invalidTokens)) {
+      await this._userService.removeDeviceTokens(input.userId, invalidTokens);
+    }
     return;
   }
 

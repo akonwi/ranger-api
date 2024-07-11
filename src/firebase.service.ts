@@ -43,14 +43,20 @@ export class FirebaseService {
   async sendNotification(input: {
     deviceTokens: string[];
     notification: Notification;
-  }) {
+  }): Promise<{ invalidTokens: string[] }> {
     const result = await firebase.messaging().sendEachForMulticast({
       tokens: input.deviceTokens,
       notification: input.notification,
     });
-    // TODO: delete bad tokens based on result.failureCount
-    // result.responses.forEach((response, index) => {
-    //   response.error;
-    // });
+
+    const invalidTokens: string[] = [];
+
+    result.responses.forEach((response, index) => {
+      if (response.error) {
+        invalidTokens.push(input.deviceTokens[index]);
+      }
+    });
+
+    return { invalidTokens };
   }
 }

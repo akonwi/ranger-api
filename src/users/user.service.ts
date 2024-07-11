@@ -85,6 +85,22 @@ export class UserService {
     });
   }
 
+  async removeDeviceTokens(id: string, invalidTokens: string[]) {
+    const user = await this.get(id);
+
+    if (isNil(user)) {
+      this.logger.warn(`Cannot remove device tokens . User ${id} not found`);
+      return;
+    }
+
+    const deviceTokens = new Set(user.appMetadata.deviceTokens);
+    invalidTokens.forEach(token => deviceTokens.delete(token));
+
+    await this.updateAppMetadata(id, {
+      deviceTokens: Array.from(deviceTokens),
+    });
+  }
+
   private _mapUser(u: GetUsers200ResponseOneOfInner): User {
     return {
       id: u.user_id,
