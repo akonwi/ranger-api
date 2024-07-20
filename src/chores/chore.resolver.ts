@@ -223,6 +223,12 @@ export class ChoreResolver {
     return isPresent(chore.deletedAt);
   }
 
+  @ResolveField(() => User, { name: "nextAssignee" })
+  async nextAssignee(@Parent() chore: Chore): Promise<Maybe<User>> {
+    if (isNil(chore.nextAssignee)) return null;
+    return this._userService.get(chore.nextAssignee);
+  }
+
   @Mutation(() => Chore)
   async deleteChore(
     @CurrentMember() user: MemberContext,
